@@ -599,16 +599,25 @@ def _semantic_segment(im: Image.Image, arr: np.ndarray, skin: np.ndarray,
         _semantic_skip_reason = "模型不可用（缺权重/依赖或推理失败）"
         return None
     H, W = arr.shape[:2]
-    # 手臂排除：模型的 Left-arm/Right-arm(14/15) 是语义级掩版，比 RGB 肤色判据
-    # 可靠得多 —— 深肤色/阴影里的手臂 skin_mask 会漏检，换装蒙版因此溢到手臂
-    # （科比深棕臂、和其正红背心贴红墙两例实测）。全库验证 arm∩upper 恒为 0，
-    # 两类互斥，并入 skin 不会误伤上衣（含长袖的袖子）。
-    if exclude_skin and getattr(config, "CLOTH_ARM_EXCLUDE", True):
-        arm = np.isin(info["labels"], (14, 15))
-        if arm.any():
-            skin = skin | arm
     person_cov = float(info["person"].mean())
     upper = np.asarray(info["upper"], dtype=bool)
+    if exclude_skin:
+        labels = info["labels"]
+        # 手臂排除：模型的 Left-arm/Right-arm(14/15) 是语义级掩版，比 RGB 肤色判据
+        # 可靠得多 —— 深肤色/阴影里的手臂 skin_mask 会漏检，换装蒙版因此溢到手臂
+        # （科比深棕臂、和其正红背心贴红墙两例实测）。全库验证 arm∩upper 恒为 0，
+        # 两类互斥，并入 skin 不会误伤上衣（含长袖的袖子）。
+        if getattr(config, "CLOTH_ARM_EXCLUDE", True):
+            arm = np.isin(labels, (14, 15))
+            if arm.any():
+                skin = skin | arm
+        # 肤色豁免：金色/暖色衣服（红牛金 T 恤、阿萨奶茶、蜜桃乌龙茶）的 RGB
+        # 落在肤色判据区间，被 skin_mask 误判成皮肤而扣掉，换装后只剩中间图案、
+        # 大片袖子肩膀露原色 —— 即「覆盖不完全」。模型语义级 upper 明确判为衣服，
+        # 应从 skin 中豁免；脸(11)/手臂(14/15)不在 upper，安全。中位豁免只占 upper
+        # 的 3.4%，仅对少数暖色衣生效。
+        if getattr(config, "CLOTH_SKIN_SPARE_UPPER", True):
+            skin = skin & ~upper
     raw_cov = float(upper.mean())
     # 模型在插画/纯色示意图/远景上会把整片衣服判成 Background，
     # 此时它的"人像"面积会塌掉 —— 不能硬信，直接退回色调引擎。

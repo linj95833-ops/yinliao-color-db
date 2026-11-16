@@ -159,6 +159,9 @@ CLOTH_LEGACY_L_WEIGHT = 0.55   # 兜底蒙版的 Lab 明度权重
 # 皮肤排除。RGB 肤色判据对深肤色/阴影里的手臂会漏检，导致换装蒙版溢到手臂；
 # 语义 arm 类别可靠且与 upper 互斥（全库验证交集恒为 0），不会误伤上衣。
 CLOTH_ARM_EXCLUDE = True
+# 肤色豁免：金色/暖色衣服（红牛金 T 恤等）的 RGB 落在肤色区间会被 skin_mask
+# 误删，造成换装覆盖不完全。模型语义 upper 判为衣服的像素从肤色排除中豁免。
+CLOTH_SKIN_SPARE_UPPER = True
 
 # 人体语义解析（C 档：SegFormer-B2 / ATR 18 类，可选 ONNX 模型）
 # 模型文件 models/segformer_clothes.onnx 或 onnxruntime 缺失时自动回退到上面的色调启发式。
