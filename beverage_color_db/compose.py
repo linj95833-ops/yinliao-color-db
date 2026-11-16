@@ -124,6 +124,14 @@ def _ensure_resolution(im: Image.Image) -> tuple[Image.Image, float]:
     short = min(im.size)
     if target <= 0 or short >= target:
         return im, 1.0
+    # cloth.load_image 会把最长边压到 PORTRAIT_MAX_SIDE。极窄长图（外星人
+    # 电解质水 88x240）按短边 480 放大后长边会到 1309，导致 seg 蒙版是
+    # 1200x440、原图是 1309x480，后续 _shading_field 直接广播报错。
+    # 先把短边目标按长边上限收一下，让两处尺寸始终一致。
+    cap = int(getattr(config, "PORTRAIT_MAX_SIDE", 1200) or 0)
+    if cap > 0:
+        long_side = max(im.size)
+        target = max(short + 1, min(target, int(cap * short / long_side)))
     scale = target / float(short)
     big = im.resize((max(1, round(im.width * scale)),
                      max(1, round(im.height * scale))),

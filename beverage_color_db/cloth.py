@@ -601,6 +601,7 @@ def _semantic_segment(im: Image.Image, arr: np.ndarray, skin: np.ndarray,
     H, W = arr.shape[:2]
     person_cov = float(info["person"].mean())
     upper = np.asarray(info["upper"], dtype=bool)
+    arm_trim = np.zeros((H, W), dtype=bool)
     if exclude_skin:
         labels = info["labels"]
         # 手臂排除：模型的 Left-arm/Right-arm(14/15) 是语义级掩版，比 RGB 肤色判据
@@ -610,7 +611,30 @@ def _semantic_segment(im: Image.Image, arr: np.ndarray, skin: np.ndarray,
         if getattr(config, "CLOTH_ARM_EXCLUDE", True):
             arm = np.isin(labels, (14, 15))
             if arm.any():
-                skin = skin | arm
+                # 无袖球衣的肩带滚边常被模型算进 arm；整条 arm 都排除会在换装后
+                # 留一圈原色边（科比红背心换雪碧，肩头留红线）。只豁免紧贴
+                # upper、且颜色仍属于上衣（或近白滚边）的 arm 像素。
+                if getattr(config, "CLOTH_ARM_TRIM_SPARE", True) and upper.any():
+                    lab_full = color.rgb_to_lab(arr.reshape(-1, 3)).reshape(H, W, 3)
+                    ref_upper = np.median(lab_full[upper], axis=0)
+                    dist_upper = np.linalg.norm(lab_full - ref_upper, axis=2)
+                    near_upper = ndi.binary_dilation(
+                        upper, iterations=max(1, int(config.CLOTH_ARM_TRIM_DILATE)))
+                    trim = arm & near_upper & (
+                        dist_upper < float(config.CLOTH_ARM_TRIM_DIST))
+                    neutral = np.hypot(lab_full[..., 1], lab_full[..., 2])
+                    trim |= (arm & near_upper
+                             & (lab_full[..., 0] > float(config.CLOTH_ARM_TRIM_L))
+                             & (neutral < float(config.CLOTH_ARM_TRIM_NEUTRAL)))
+                    # 拼色肩块（和其正米色肩片）颜色离主色很远，但语义概率仍
+                    # 明显高于真手臂，用 upper_prob 再捞回这一类误标。
+                    trim |= (arm & near_upper
+                             & (np.asarray(info["upper_prob"], dtype=float)
+                                >= float(config.CLOTH_ARM_TRIM_PROB)))
+                    arm_trim = trim
+                # trim 既不该留在 arm 里，也不该留在 RGB 肤色判据里：
+                # 米色拼块/金色滚边都会被 skin_mask 误判成皮肤。
+                skin = (skin | arm) & ~arm_trim
         # 肤色豁免：金色/暖色衣服（红牛金 T 恤、阿萨奶茶、蜜桃乌龙茶）的 RGB
         # 落在肤色判据区间，被 skin_mask 误判成皮肤而扣掉，换装后只剩中间图案、
         # 大片袖子肩膀露原色 —— 即「覆盖不完全」。模型语义级 upper 明确判为衣服，
@@ -636,6 +660,10 @@ def _semantic_segment(im: Image.Image, arr: np.ndarray, skin: np.ndarray,
     hard, gap_holes = _fill_holes_keep_gaps(upper, arr, bg_rgb, bg_ok, skin)
     hard = _semantic_expand(arr, hard, info, skin, exclude_skin)
     hard = _morph(hard, "binary_closing", np.ones((3, 3)))
+    # 肩带滚边/拼色肩片：标签被判成 arm，但语义概率与空间位置都说明属于上衣。
+    # 直接并回硬掩版，后续平滑和缝隙扣除仍会照常约束它。
+    if arm_trim.any():
+        hard |= arm_trim
     hard = _keep_components(hard)       # 再清一次，挡住被区域生长放大的伪影
     hard &= ~info["background"]
     if exclude_skin:

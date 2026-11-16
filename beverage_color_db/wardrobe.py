@@ -512,13 +512,76 @@ def material_mask(im: Image.Image) -> np.ndarray:
 
     prob = np.asarray(info["upper_prob"], dtype=np.float32)
     labels = np.asarray(info["labels"])
+    upper_seed = np.asarray(info["upper"], dtype=bool)
     lab = color.rgb_to_lab(arr.reshape(-1, 3)).reshape(H, W, 3)
+
+    def _torso_seed(seed: np.ndarray) -> np.ndarray:
+        """从语义上衣里剔除「手持物」和手臂误判，只留躯干那块主种子。
+
+        景田那张蓝衣蓝幕，模型把手里那瓶景田也判成 Upper-clothes。瓶子
+        和躯干是两个不连通的块，且质心落在躯干框左侧；胸前紫字虽然也是
+        独立色块，却在躯干框内，会保留。手臂误判块再用肤色比例剔掉。
+        """
+        cc, n = ndi.label(seed)
+        if n <= 1:
+            return seed
+        sizes = np.bincount(cc.ravel())
+        main = int(np.argmax(sizes[1:]) + 1)
+        ys, xs = np.where(cc == main)
+        if xs.size < 200:
+            return seed
+        x0, x1 = int(xs.min()), int(xs.max())
+        y0, y1 = int(ys.min()), int(ys.max())
+        px = max(4, int(0.08 * (x1 - x0)))
+        py = max(4, int(0.08 * (y1 - y0)))
+        skin = cloth.skin_mask(arr)
+        keep = [main]
+        for i in range(1, n + 1):
+            if i == main or sizes[i] < 0.02 * sizes[main]:
+                continue
+            cy, cx = ndi.center_of_mass(seed, cc, i)
+            if not (x0 - px <= cx <= x1 + px and y0 - py <= cy <= y1 + py):
+                continue
+            comp = cc == i
+            if float((comp & skin).sum()) / max(1, int(comp.sum())) > 0.35:
+                continue
+            keep.append(i)
+        return np.isin(cc, keep)
+
+    upper_seed = _torso_seed(upper_seed)
 
     base, lo = _base_from_prob(prob)
     if base.sum() < 200:
         seg = cloth.segment(im, engine="tone", layer_split=False,
                             edge_smooth=False)
         return np.asarray(seg["hard"], dtype=bool)
+
+    def _source_components(mask: np.ndarray) -> np.ndarray:
+        """只保留与语义上衣有交集的连通块。
+
+        旧版按面积保留 Top-N：蓝衣蓝幕那张把同色的手持水瓶、胸前紫字
+        当成独立衣服块留下来，条带里出现瓶身和波纹。语义 upper 明确
+        不包含瓶子/背景，所以改为按「是否与 upper 有实质重叠」筛选；
+        小块若大部分是肤色（模型误把手臂判成上衣），同样剔除。主块很大，
+        金色衣服落在肤色区间也不会被这条规则误伤。
+        """
+        cc, n = ndi.label(mask)
+        if n <= 1:
+            return mask
+        keep: list[int] = []
+        skin = None
+        for i in range(1, n + 1):
+            comp = cc == i
+            area = int(comp.sum())
+            if int((comp & upper_seed).sum()) < max(50, 0.02 * area):
+                continue
+            if area < 0.25 * base.sum():
+                if skin is None:
+                    skin = cloth.skin_mask(arr)
+                if float((comp & skin).sum()) / max(1, area) > 0.35:
+                    continue
+            keep.append(i)
+        return np.isin(cc, keep) if keep else np.zeros_like(mask)
 
     # 脸/头发/四肢/下装：模型只要判成这些就一律不进衣服（袖子不会被判成 arm）
     protect = np.isin(labels, (1, 2, 3, 6, 9, 10, 11, 12, 13, 14, 15))
@@ -542,17 +605,23 @@ def material_mask(im: Image.Image) -> np.ndarray:
 
     grown = base.copy()
     bg = border_background(arr)
+    if bg is not None:
+        # 蓝衣配蓝幕（景田那张）会被颜色判据整件误标成背景。模型已经用
+        # upper_prob 高置信度圈出了上衣，这里必须从背景掩版里豁免，否则
+        # cand &= ~bg 会把整件衣服删掉，只剩瓶身和胸前紫字被当成"衣服"。
+        # 只豁免高置信度主体，不豁免 prob 低的边缘，缝隙/脖子仍会被扣掉。
+        bg = bg & ~ndi.binary_dilation(base, iterations=1)
     for _ in range(3):
         cand = (prob >= max(0.10, lo - 0.06)) & (dist < 14.0) & ~protect
         if bg is not None:
             cand &= ~bg
         new = ndi.binary_closing(cand, np.ones((3, 3)))
-        new = _keep_components(_fill_holes(new, bg), 3)
+        new = _source_components(_fill_holes(new, bg))
         if new.sum() <= grown.sum() * 1.01:
             grown = new
             break
         grown = new
-    grown = _keep_components(_fill_holes(grown, bg), 2)
+    grown = _source_components(_fill_holes(grown, bg))
     grown = ndi.binary_closing(grown, np.ones((5, 5)))
     grown = _fill_holes(grown, bg)
 
@@ -698,6 +767,11 @@ def build_item(src_path: str | Path, name_cn: str, gid: str | None = None,
     crop = arr[y0:y1, x0:x1]
     cm = mask[y0:y1, x0:x1]
     bg_full = border_background(arr)
+    if bg_full is not None:
+        # 同上：蓝衣蓝幕时颜色判据会把衣服本身也标成背景。material_mask 已
+        # 经给出可信衣服轮廓，后续从条带里清背景混色时必须把它保护起来，
+        # 否则整件蓝衣会被 nearest 主色替换掉，只剩印花被拉伸成波纹。
+        bg_full = bg_full & ~ndi.binary_dilation(mask, iterations=1)
     bg_crop = bg_full[y0:y1, x0:x1] if bg_full is not None else None
 
     sr_info: dict[str, Any] = {"upscaled": False}

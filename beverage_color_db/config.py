@@ -159,6 +159,18 @@ CLOTH_LEGACY_L_WEIGHT = 0.55   # 兜底蒙版的 Lab 明度权重
 # 皮肤排除。RGB 肤色判据对深肤色/阴影里的手臂会漏检，导致换装蒙版溢到手臂；
 # 语义 arm 类别可靠且与 upper 互斥（全库验证交集恒为 0），不会误伤上衣。
 CLOTH_ARM_EXCLUDE = True
+# 肩带滚边豁免：无袖球衣（科比那张红色 Coca-Cola 背心）的肩带边缘会被模型
+# 判成 Left/Right-arm，连手臂一起排除后，换装后肩头会留一条原球衣红边。
+# 只把「紧贴上衣、颜色仍属于上衣（或近白滚边）」的那几像素 arm 豁免回来，
+# 深肤色手臂因为颜色离上衣很远，仍然被排除。
+CLOTH_ARM_TRIM_SPARE = True
+CLOTH_ARM_TRIM_DILATE = 4
+CLOTH_ARM_TRIM_DIST = 30.0
+CLOTH_ARM_TRIM_L = 76.0
+CLOTH_ARM_TRIM_NEUTRAL = 15.0
+# 和其正那件红背心的米色肩拼块被模型标成 arm，但 upper_prob 仍有 0.4 以上；
+# 真手臂只有 0.3 左右。用概率再救回这一类「模型标签错、概率没那么低」的拼块。
+CLOTH_ARM_TRIM_PROB = 0.35
 # 肤色豁免：金色/暖色衣服（红牛金 T 恤等）的 RGB 落在肤色区间会被 skin_mask
 # 误删，造成换装覆盖不完全。模型语义 upper 判为衣服的像素从肤色排除中豁免。
 CLOTH_SKIN_SPARE_UPPER = True
