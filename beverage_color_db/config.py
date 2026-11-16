@@ -38,7 +38,7 @@ COMPOSE_IMAGE = REPORT_DIR / "composite.png"
 # Commons / OFF 要求可识别的 User-Agent；已指向本仓库地址。
 USER_AGENT = (
     "BeverageColorDB/0.1 "
-    "(non-commercial educational project; +https://github.com/linj95833-ops/beverage-color-db)"
+    "(non-commercial educational project; +https://github.com/linj95833-ops/yinliao-color-db)"
 )
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 OFF_PRODUCT_API = "https://world.openfoodfacts.org/api/v2/product/{code}.json"
