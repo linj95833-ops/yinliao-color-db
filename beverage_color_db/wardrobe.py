@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 import re
 from pathlib import Path
@@ -90,7 +91,7 @@ def slugify(name_cn: str) -> str:
     ascii_part = re.sub(r"[^a-z0-9]+", "_", low).strip("_")
     if ascii_part:
         return ascii_part
-    return "g" + hex(abs(hash(name_cn)) % (1 << 32))[2:]
+    return "g" + hashlib.sha256(name_cn.strip().encode('utf-8')).hexdigest()[:12]
 
 
 def _dir(gid: str) -> Path:

@@ -1,0 +1,30 @@
+饮料换装工作室 v2.1.0 · Windows 64 位单文件版
+
+1. 下载 DrinkStudio-v2.1.0.exe，放在普通可写文件夹，双击运行。
+   无需安装 Python，无需联网，也不要求 NVIDIA 显卡。
+   第一次需解压依赖与资源，请等待约 10-40 秒，随后自动打开浏览器。
+2. 程序旁会生成 DrinkStudio_Data 文件夹，保存 36 件衣橱、人体解析模型
+   和生成结果。请保留此目录，下载更新的 EXE 时也要保留已有数据。
+3. 上传单人人像，查看绿色换装区域，选择指定饮料，点击生成并下载 PNG。
+   可用擦除保护外露手臂，用补全修正遗漏的衣服；支持撤销和位置调整。
+4. 最长边超过 2400 像素的输入会等比缩小；照片最大 20MB、2400 万像素。
+5. 照片与成品只在本机处理。结果保存在 DrinkStudio_Data\outputs。
+   用完关闭程序的控制台窗口即可停止服务。
+6. 若默认 8877 端口被占用，程序会自动选择后续空闲端口，以控制台地址为准。
+
+本版包含
+  修复短袖外露手臂误覆盖；提供区域画笔修正。
+  修复腹部白色印花误识别造成的缺口、残字与不自然色块。
+  改用连续纵向贴图，消除腹部重复末行和平涂过渡。
+  重做和其正素材，完整保留三个字并以文字中心定位。
+  保留原人像姿势与衣服轮廓，不生成新的身体或袖型。
+
+源码包
+  解压 DrinkStudio-v2.1.0-source.zip，在 Python 3.13 环境安装
+  requirements.txt 后执行 python studio.py。
+  安装 requirements-build.txt 后执行 python build_release.py 可重新打包。
+  源码包内置人体解析模型与衣橱；Git 仓库只存代码，未存二进制资产。
+
+源码：https://github.com/linj95833-ops/yinliao-color-db
+下载：https://github.com/linj95833-ops/yinliao-color-db/releases/tag/v2.1.0
+代码许可证：MIT；素材与模型说明见程序数据目录 docs\ATTRIBUTION.md。

@@ -90,3 +90,10 @@ report/*
 !report/wardrobe_face_mask.png
 !report/sprite_watermark_fix.png
 !report/lettering_before_after.png
+
+# Drink Studio release and private sessions
+outputs/
+release/
+release-assets/
+release-smoke/
+*.log

@@ -129,9 +129,9 @@ def _same_photo(a: np.ndarray | None, b: np.ndarray | None) -> bool:
     """缩放/锐化过的同一张照片，24x24 缩略图相关系数仍会很高。"""
     if a is None or b is None:
         return False
-    x, y = a.ravel() - a.mean(), b.ravel() - b.mean()
-    den = float(np.sqrt((x * x).sum() * (y * y).sum()))
-    return den > 1e-6 and float((x * y).sum() / den) > config.HUMAN_CACHE_SIMILARITY
+    # Similar framing is common in portrait libraries. Correlation is not an
+    # identity check and can return another person's arm/clothing boundary.
+    return a.shape == b.shape and np.array_equal(a, b)
 
 
 def _resize(m: np.ndarray, size: tuple[int, int], nearest: bool) -> np.ndarray:
