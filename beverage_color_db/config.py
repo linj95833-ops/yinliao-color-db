@@ -155,6 +155,11 @@ CLOTH_EDGE_GROW = 4            # 轮廓外搜索宽度（像素）
 CLOTH_EDGE_GROW_CHROMA = 14.0  # 与衣服种子的色度距离上限
 CLOTH_LEGACY_L_WEIGHT = 0.55   # 兜底蒙版的 Lab 明度权重
 
+# 手臂排除（cloth.py 语义分割）：把模型判为 Left/Right-arm(14/15) 的像素并入
+# 皮肤排除。RGB 肤色判据对深肤色/阴影里的手臂会漏检，导致换装蒙版溢到手臂；
+# 语义 arm 类别可靠且与 upper 互斥（全库验证交集恒为 0），不会误伤上衣。
+CLOTH_ARM_EXCLUDE = True
+
 # 人体语义解析（C 档：SegFormer-B2 / ATR 18 类，可选 ONNX 模型）
 # 模型文件 models/segformer_clothes.onnx 或 onnxruntime 缺失时自动回退到上面的色调启发式。
 # auto = 模型优先且失败自动降级；model = 强制模型（失败仍降级，但记在 method 里）；

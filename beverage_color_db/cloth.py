@@ -599,6 +599,14 @@ def _semantic_segment(im: Image.Image, arr: np.ndarray, skin: np.ndarray,
         _semantic_skip_reason = "模型不可用（缺权重/依赖或推理失败）"
         return None
     H, W = arr.shape[:2]
+    # 手臂排除：模型的 Left-arm/Right-arm(14/15) 是语义级掩版，比 RGB 肤色判据
+    # 可靠得多 —— 深肤色/阴影里的手臂 skin_mask 会漏检，换装蒙版因此溢到手臂
+    # （科比深棕臂、和其正红背心贴红墙两例实测）。全库验证 arm∩upper 恒为 0，
+    # 两类互斥，并入 skin 不会误伤上衣（含长袖的袖子）。
+    if exclude_skin and getattr(config, "CLOTH_ARM_EXCLUDE", True):
+        arm = np.isin(info["labels"], (14, 15))
+        if arm.any():
+            skin = skin | arm
     person_cov = float(info["person"].mean())
     upper = np.asarray(info["upper"], dtype=bool)
     raw_cov = float(upper.mean())
@@ -734,6 +742,11 @@ def _semantic_segment(im: Image.Image, arr: np.ndarray, skin: np.ndarray,
             if float(grown.mean()) > config.HUMAN_MAX_COVERAGE:
                 break
             hard = grown
+        # 轮廓外扩张是逐像素按颜色判定的，会把远处「与衣服同色」的小块（背景墙
+        # 上的红影、手臂旁的黄斑）也连进来，形成与主体完全分离的绿色孤岛 —— 
+        # 换装后像贴纸浮在手臂上（和其正贴红墙、科比黄球衣实测）。扩张后再清
+        # 一次连通块，剔除远离主体的小碎片；袖子/肩带与主块相连，不受影响。
+        hard = _keep_components(hard)
         # 扩张是逐像素按颜色判定的，边界会重新变得毛糙（肩线/袖口出现细碎
         # 凸起，成图上就是「撕纸边」），所以扩张后再走一遍轮廓平滑。
         if edge_smooth and edge_grown:
