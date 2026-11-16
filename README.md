@@ -2,7 +2,9 @@
 
 传一张人像照片，认出你衣服的颜色，配一瓶最搭的饮料，再把它的包装穿到你身上。全程离线，不接生成模型，不需要显卡。
 
-**怎么用**：双击 `饮料换装.exe` → 浏览器自动打开 → 选衣服或传自己的照片 → 下载成品。
+**怎么用**：从 [**Releases**](https://github.com/linj95833-ops/yinliao-color-db/releases/latest) 下载 `DrinkWrap.exe`（就是「饮料换装」）→ 双击运行，浏览器自动打开 → 选衣服或传自己的照片 → 下载成品。
+
+> exe 是 146 MB，超过 GitHub 单文件 100 MB 上限，**不在仓库代码里**，只放在 Releases 附件中（[直达下载](https://github.com/linj95833-ops/yinliao-color-db/releases/latest/download/DrinkWrap.exe)）。首次运行会在 exe 同目录生成 `饮料换装_数据` 文件夹存结果，删掉即清空。
 
 <details>
 <summary>项目沿革与当前进度（点开看）</summary>
