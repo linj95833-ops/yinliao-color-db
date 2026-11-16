@@ -39,6 +39,12 @@ from . import config
 _CACHE: dict[str, dict[str, Any]] = {}
 
 
+def _align_mode() -> str:
+    """纹理坐标映射模式：rowwise（逐行贴合，旧观感）/ similarity（整件等比）。"""
+    mode = str(getattr(config, "GARMENT_TEXTURE_ALIGN", "rowwise") or "").strip().lower()
+    return "similarity" if mode.startswith("sim") else "rowwise"
+
+
 # --------------------------------------------------------------------------
 # 逐行轮廓
 # --------------------------------------------------------------------------
@@ -409,6 +415,27 @@ def build_texture(garment_id: str | None, shape: tuple[int, int], bbox,
         sx = cx_s + dx / s
     coords = np.stack([np.broadcast_to(sy, (Hd, Wd)),
                        np.broadcast_to(sx, (Hd, Wd))])
+    if _align_mode() == "rowwise":
+        # 旧观感（2026-11-16 之前）：逐行各向异性映射 —— 纵向把源衣服线性拉满
+        # 目标高度，横向把**每一行**的源半宽拉到目标该行的半宽，中心也逐行取。
+        # 图案因此完全贴合身形（肩宽腰窄都跟得上）；代价是同一根竖笔画在不同
+        # 行被横向缩放不同，会轻微抖成波浪，字也随行宽被压窄或拉宽。
+        span_d = max(1.0, float(y1d - y0d))
+        span_sr = max(1.0, float(y1s - y0s))
+        sy_1d = y0s + (np.arange(Hd, dtype=float) - y0d) * (span_sr / span_d)
+        sy_1d = np.clip(sy_1d, float(y0s), float(y1s))
+        sy_idx = np.clip(np.rint(sy_1d).astype(int), 0, Hs - 1)
+        cx_row = center_s[sy_idx][:, None]
+        hw_row = np.maximum(half_s[sy_idx], 1e-3)[:, None]
+        cx_d_row = cd[:, None]
+        hw_d_row = np.maximum(hd, 1e-3)[:, None]
+        sx = cx_row + (xx - cx_d_row) * (hw_row / hw_d_row)
+        sx = np.clip(sx, 0.0, float(asset["strip"].shape[1] - 1))
+        coords = np.stack([np.broadcast_to(sy_1d[:, None], (Hd, Wd)), sx])
+        # 逐行映射本身就填满，不需要「两侧/上下退化成主色」的补丁
+        extra = 0.0
+        t_edge = np.zeros((1, Wd), dtype=float)
+        v_fill = np.zeros((Hd, 1), dtype=float)
     strip = asset["strip"]
     tex = np.stack([ndi.map_coordinates(strip[..., c], coords, order=3,
                                         mode="nearest") for c in range(3)],
