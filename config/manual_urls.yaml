@@ -1,0 +1,12 @@
+# 兜底图源：仅当 Commons / OFF / 本地素材都覆盖不到某个品牌时手动启用。
+#
+# 规则：
+#  1) 只下载你逐条明确填入的 URL，不做任何自动搜刮；
+#  2) 下载前按目标站 robots.txt 检查 User-agent 与 Disallow，禁止则跳过并记录；
+#  3) 默认关闭，需把 enabled 改为 true 才会生效；
+#  4) 图片版权由填写者自行确认，程序会把 license 标为 USER_PROVIDED。
+enabled: false
+respect_robots: true
+urls: {}
+  # coca_cola:
+  #   - https://example.com/some-product-shot.jpg

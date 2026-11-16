@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>人像换装 · 基准衣橱</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --panel:#ffffff; --ink:#14181f; --muted:#6b7280;
+    --line:#e5e7eb; --brand:#e4322b; --brand-dk:#c0241e; --ok:#0f9d58;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+    --r:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit}
+  header{
+    padding:20px 20px 16px; background:linear-gradient(160deg,#fff 0%,#fbfbfc 100%);
+    border-bottom:1px solid var(--line);
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{margin:0 0 4px;font-size:19px;letter-spacing:.2px}
+  .sub{color:var(--muted);font-size:13px;margin:0}
+  .badge{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:999px;
+    background:#eef2ff;color:#3b5bdb;font-size:11px;vertical-align:2px}
+  main{max-width:1180px;margin:0 auto;padding:18px 16px 120px;
+    display:grid;grid-template-columns:360px 1fr;gap:16px;align-items:start}
+  @media (max-width:900px){ main{grid-template-columns:1fr;padding-bottom:140px} }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow)}
+  .card.pad{padding:14px}
+  h2{font-size:13px;margin:0 0 10px;color:var(--muted);font-weight:600;letter-spacing:.4px}
+
+  .drop{
+    border:1.5px dashed #cfd4dc;border-radius:12px;padding:26px 14px;text-align:center;
+    color:var(--muted);cursor:pointer;transition:.18s;background:#fafbfc;font-size:13px;
+  }
+  .drop:hover,.drop.hot{border-color:var(--brand);color:var(--brand);background:#fff7f7}
+  .drop b{display:block;font-size:14px;color:var(--ink);margin-bottom:4px}
+  #preview{width:100%;border-radius:10px;display:block;margin-top:10px}
+  .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  button{
+    font:inherit;border:0;border-radius:10px;padding:10px 16px;cursor:pointer;
+    background:var(--brand);color:#fff;font-weight:600;transition:.16s;
+    box-shadow:0 1px 2px rgba(228,50,43,.25);
+  }
+  button:hover:not(:disabled){background:var(--brand-dk)}
+  button:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+  button.ghost{background:#f2f4f7;color:#374151;box-shadow:none}
+  button.ghost:hover:not(:disabled){background:#e8ebef}
+  .mini{padding:6px 10px;font-size:12.5px;border-radius:8px}
+  .hint{color:var(--muted);font-size:12.5px;margin:8px 0 0}
+  .status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
+  .status.err{color:#b42318}
+  .status .dot{display:inline-block;width:7px;height:7px;border-radius:50%;
+    background:var(--ok);margin-right:6px;animation:pulse 1.1s infinite}
+  @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1}}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+  .item{
+    position:relative;border:2px solid transparent;border-radius:12px;overflow:hidden;
+    background:#f3f4f6;cursor:pointer;transition:.16s;aspect-ratio:3/4;
+  }
+  .item img{width:100%;height:100%;object-fit:cover;display:block}
+  .item .nm{
+    position:absolute;left:0;right:0;bottom:0;padding:14px 6px 4px;font-size:11.5px;
+    color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.66));white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .item:hover{transform:translateY(-1px)}
+  .item.sel{border-color:var(--brand);box-shadow:0 0 0 3px rgba(228,50,43,.15)}
+  .item .rank{
+    position:absolute;top:5px;left:5px;background:rgba(20,24,31,.72);color:#fff;
+    font-size:10.5px;padding:1px 6px;border-radius:999px;backdrop-filter:blur(2px);
+  }
+  .item.sel .rank{background:var(--brand)}
+  .tag{position:absolute;top:5px;right:5px;font-size:10px;padding:1px 5px;border-radius:6px;
+    background:rgba(255,255,255,.9);color:#374151}
+
+  .result{margin-top:14px}
+  .result img{width:100%;border-radius:12px;display:block;border:1px solid var(--line)}
+  .meta{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;
+    font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+  .dl{font-weight:600;color:var(--brand);text-decoration:none}
+
+  .bar{
+    position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.92);
+    border-top:1px solid var(--line);backdrop-filter:blur(10px);padding:10px 16px;
+    display:flex;gap:10px;align-items:center;justify-content:center;z-index:9;
+  }
+  .bar .inner{max-width:1180px;width:100%;display:flex;gap:10px;align-items:center}
+  .bar .sel{font-size:12.5px;color:var(--muted);flex:1;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bar button{flex:0 0 auto}
+  footer{max-width:1180px;margin:0 auto;padding:0 16px 90px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>人像换装 <span class="badge" id="libCount">衣橱加载中</span></h1>
+    <p class="sub">上传一张人像 → 自动识别衣服颜色 → 从「已经换好装的基准人像」里选一件最接近的，
+      把基准衣服按你的身形拉伸覆盖上去。</p>
+  </div>
+</header>
+
+<main>
+  <!-- 左：上传 -->
+  <section class="card pad">
+    <h2>1 · 上传人像</h2>
+    <div class="drop" id="drop">
+      <b>点击选择，或把人像拖进来</b>
+      PNG / JPEG / WebP，建议全身或半身、正面站立
+      <input type="file" id="file" accept="image/*" hidden>
+    </div>
+    <img id="preview" hidden alt="预览">
+    <div class="row" id="filebar" hidden>
+      <button class="mini ghost" id="clearPhoto" type="button">移除</button>
+      <button class="mini ghost" id="changePhoto" type="button">换一张</button>
+    </div>
+    <div class="status" id="status"></div>
+
+    <div class="result" id="result" hidden>
+      <h2 style="margin-top:16px">4 · 换装结果</h2>
+      <img id="resultImg" alt="换装结果">
+      <div class="meta">
+        <span id="resultInfo"></span>
+        <a class="dl" id="download" download="换装结果.png">下载 PNG</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 右：衣橱 -->
+  <section class="card pad">
+    <h2>2 · 选择基准衣服 <span id="matchHint" style="font-weight:400"></span></h2>
+    <div class="grid" id="grid"></div>
+    <p class="hint">上传后会自动按你衣服的颜色排序，前三名带角标；也可以直接点任意一件。</p>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="inner">
+    <span class="sel" id="selInfo">尚未选择基准衣服</span>
+    <button class="ghost" id="autoPick" type="button">自动选最像的</button>
+    <button id="run" disabled type="button">开始换装</button>
+  </div>
+</div>
+
+<footer>
+  运行时完全离线：分割模型、衣橱资产、渲染都在本机完成，照片不会上传到任何服务器。
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const state = { file: null, items: [], selected: null, matches: [], busy: false };
+
+function setStatus(text, isErr){
+  const el = $('status');
+  el.className = 'status' + (isErr ? ' err' : '');
+  el.innerHTML = text ? (isErr ? '' : '<span class="dot"></span>') + text : '';
+}
+
+function readFile(file){
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+/* 太大的人像先缩到长边 1600，减少上传体积；服务端还会再按需放大 */
+function shrink(dataUrl, maxSide=1600){
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const s = Math.min(1, maxSide / Math.max(img.width, img.height));
+      if (s >= 1) return res(dataUrl);
+      const c = document.createElement('canvas');
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      res(c.toDataURL('image/jpeg', 0.92));
+    };
+    img.src = dataUrl;
+  });
+}
+
+async function loadLibrary(){
+  try{
+    const r = await fetch('/api/wardrobe');
+    const d = await r.json();
+    state.items = d.items || [];
+    $('libCount').textContent = state.items.length + ' 件基准衣服';
+    renderGrid();
+  }catch(e){
+    $('libCount').textContent = '衣橱读取失败';
+    setStatus('衣橱读取失败：' + e.message, true);
+  }
+}
+
+function renderGrid(){
+  const grid = $('grid');
+  grid.innerHTML = '';
+  state.items.forEach(it => {
+    const el = document.createElement('div');
+    el.className = 'item';
+    el.dataset.id = it.id;
+    el.innerHTML = `<img src="${it.thumb_url}" alt="${it.name_cn}" loading="lazy">
+      <span class="nm">${it.name_cn}</span>`;
+    el.onclick = () => select(it.id);
+    grid.appendChild(el);
+  });
+  paintSelect();
+}
+
+function paintSelect(){
+  document.querySelectorAll('.item').forEach(el => {
+    el.classList.toggle('sel', el.dataset.id === state.selected);
+    const old = el.querySelector('.rank'); if (old) old.remove();
+    const m = state.matches.find(x => x.id === el.dataset.id);
+    if (m && m.rank && m.rank <= 3){
+      const s = document.createElement('span');
+      s.className = 'rank'; s.textContent = 'TOP' + m.rank;
+      el.appendChild(s);
+    }
+  });
+  const it = state.items.find(x => x.id === state.selected);
+  $('selInfo').textContent = it ? ('已选：' + it.name_cn) : '尚未选择基准衣服';
+  $('run').disabled = !(state.file && state.selected) || state.busy;
+}
+
+function select(id){
+  state.selected = id;
+  paintSelect();
+}
+
+async function onPick(file){
+  if (!file){ return; }
+  state.file = file;
+  const raw = await readFile(file);
+  const url = await shrink(raw);
+  $('preview').src = url;
+  $('preview').hidden = false;
+  $('drop').style.display = 'none';
+  $('filebar').hidden = false;
+  $('result').hidden = true;
+  state.matches = [];
+  paintSelect();
+  await autoMatch(url);
+}
+
+async function autoMatch(dataUrl){
+  setStatus('正在识别衣服颜色…');
+  try{
+    const r = await fetch('/api/wd/match', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ image: dataUrl, top: 6 })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    state.matches = d.matches || [];
+    if (state.matches.length){
+      state.selected = state.matches[0].id;
+      const q = d.query || {};
+      const hexes = (q.palette || []).slice(0,4).map(c => c.hex).join(' ');
+      setStatus('识别到衣服颜色 ' + hexes + '，已自动选中「' +
+        (state.items.find(x=>x.id===state.selected)||{}).name_cn + '」');
+    } else {
+      setStatus('没有匹配到合适的基准衣服，请手动选一件', true);
+    }
+    paintSelect();
+  }catch(e){
+    setStatus('识别失败：' + e.message, true);
+  }
+}
+
+async function run(){
+  if (!state.file || !state.selected || state.busy) return;
+  state.busy = true; paintSelect();
+  setStatus('正在换装（分割 → 变形 → 合成）…');
+  try{
+    const raw = await readFile(state.file);
+    const url = await shrink(raw);
+    const r = await fetch('/api/wd/compose', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ image: url, garment: state.selected })
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status));
+    const c = d.composite || {};
+    $('resultImg').src = c.preview || '';
+    $('download').href = c.download || c.preview || '#';
+    const name = (state.items.find(x => x.id === d.garment) || {}).name_cn || d.garment;
+    $('resultInfo').textContent = name + ' · ' + (c.size ? c.size.join('×') + ' px' : '');
+    $('result').hidden = false;
+    setStatus('完成。可以换一件再试。');
+    $('result').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }catch(e){
+    setStatus('换装失败：' + e.message, true);
+  }finally{
+    state.busy = false; paintSelect();
+  }
+}
+
+/* 交互绑定 */
+$('drop').onclick = () => $('file').click();
+$('changePhoto').onclick = () => $('file').click();
+$('file').onchange = (e) => { const f = e.target.files[0]; if (f) onPick(f); e.target.value=''; };
+$('clearPhoto').onclick = () => {
+  state.file = null; state.selected = null; state.matches = [];
+  $('preview').hidden = true; $('filebar').hidden = true;
+  $('drop').style.display = ''; $('result').hidden = true;
+  setStatus(''); paintSelect();
+};
+['dragenter','dragover'].forEach(ev => $('drop').addEventListener(ev, e => {
+  e.preventDefault(); $('drop').classList.add('hot');
+}));
+['dragleave','drop'].forEach(ev => $('drop').addEventListener(ev, e => {
+  e.preventDefault(); $('drop').classList.remove('hot');
+}));
+$('drop').addEventListener('drop', e => {
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) onPick(f);
+});
+$('run').onclick = run;
+$('autoPick').onclick = () => {
+  if (state.matches.length){ select(state.matches[0].id); setStatus('已选中最接近的一件。'); }
+  else if (state.items.length){ setStatus('先上传人像，才能自动挑最像的', true); }
+};
+
+loadLibrary();
+</script>
+</body>
+</html>

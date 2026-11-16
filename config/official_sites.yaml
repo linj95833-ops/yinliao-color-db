@@ -1,0 +1,65 @@
+# 国内品牌官网公开页配置（robots 抓取兜底）
+#
+# 只在 OFF 检索不到图时启用。抓取前会读取并遵守 /robots.txt，
+# 每域名串行限速、页面结果缓存到 data/cache/，只抓这里显式列出的页面
+# （外加从入口页自动发现的 1~2 个产品页链接，不递归）。
+#
+# 实测可达性 2026-11-10：带 www 的域名才解析；部分站点是 SPA，
+# /robots.txt 返回 index.html，视为无 robots 规则（默认允许）。
+# 图片版权归品牌方所有，见 config.OFFICIAL_LICENSE，请勿随仓库分发二进制。
+
+nongfu_spring:
+  attribution: 农夫山泉官方网站
+  pages: ["https://www.nongfuspring.com/"]
+
+oriental_leaves:
+  attribution: 农夫山泉官方网站
+  pages: ["https://www.nongfuspring.com/"]
+
+tea_pi:
+  attribution: 农夫山泉官方网站
+  pages: ["https://www.nongfuspring.com/"]
+
+scream:
+  attribution: 农夫山泉官方网站
+  pages: ["https://www.nongfuspring.com/"]
+
+wahaha:
+  attribution: 娃哈哈集团官方网站
+  pages: ["https://www.wahaha.com.cn/"]
+
+ad_calcium_milk:
+  attribution: 娃哈哈集团官方网站
+  pages: ["https://www.wahaha.com.cn/"]
+
+kangshifu:
+  attribution: 康师傅官方网站
+  pages: ["https://www.masterkong.com.cn/"]
+
+uni_president:
+  attribution: 统一企业官方网站
+  pages: ["https://www.uni-president.com.cn/"]
+
+jianlibao:
+  attribution: 健力宝官方网站
+  pages: ["https://www.jianlibao.com.cn/"]
+
+huiyuan:
+  attribution: 汇源果汁官方网站
+  pages: ["https://www.huiyuan.com.cn/"]
+
+ganten:
+  attribution: 百岁山官方网站
+  pages: ["https://www.ganten.com.cn/"]
+
+mixue:
+  attribution: 蜜雪冰城官方网站
+  pages: ["https://www.mxbc.com/"]
+
+luckin_coffee:
+  attribution: 瑞幸咖啡官方网站
+  pages: ["https://www.luckincoffee.com/"]
+
+heytea:
+  attribution: 喜茶官方网站
+  pages: ["https://www.heytea.com/"]

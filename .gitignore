@@ -1,0 +1,92 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+# PyInstaller 打包产物（exe 由 scripts/build_exe.py 生成，单独交付）
+build/
+dist/
+*.spec
+*.exe
+
+# 语义分割模型：52MB 权重不入库，用 scripts/fetch_model.py 一键重建；
+# 但 build_package.py / build_exe.py 会把它打进交付包，开箱即用。
+models/*.onnx
+models/_source/
+
+# 图片与数据库二进制不入库：CC BY-SA 图片需逐张署名，且仓库体积会失控。
+# 仓库只保留代码 + 品牌清单 + 生成器，任何人可运行脚本重建数据库。
+data/images/
+data/inbox/
+data/cache/
+data/*.db
+data/*.db-*
+report/quality.json
+report/quality.md
+# gallery.html 内联了图片缩略图 base64，等同于分发图片，不入库
+report/gallery.html
+# 人像匹配结果内联了使用者上传的照片，属私有数据，不入库
+report/match_result.html
+report/match_result.json
+# 衣服换色合成图包含上传的人像，同样不入库
+report/composite*.png
+report/_selftest*
+report/_test*
+report/_dbg*
+report/_wrap*
+report/_ref_*
+report/_app_check.js
+report/_dom_stub.cjs
+report/_js_check.js
+report/_audit/
+report/_audit2/
+report/_try/
+report/_check*
+report/_*.png           # 参数试验 / 接触表 / 接口回归等临时 PNG，不入库
+# 逐品牌调优：55 张含人像的最终图、前后对比页与调试总表，均不入库
+report/brands/
+report/brand_gallery.html
+# 手机访问二维码页含本机内网 IP，会随 DHCP 变化，不入库
+report/phone_access.html
+report/phone_qr.png
+# 包装贴图对比页内联了人像照片，属私有数据，不入库
+report/wrap_compare.html
+
+# 署名清单需要提交（由 report 命令生成）
+!ATTRIBUTION.md
+
+# ============================================================
+# 仓库发布边界（2026-11-16 收口）
+# 原则：仓库只放「代码 + 品牌清单 + 生成脚本」，
+#       任何图片二进制、人像衍生数据、模型权重都不入库。
+#       clone 后按 README 跑脚本即可重建。
+# ============================================================
+
+# 除主环境外还有三套 AI 实验环境（.venv-ai / -cuda / -final），单个均在 GB 级
+.venv*/
+venv/
+env/
+
+# 扩散模型实验权重：models/diffusion/sd15 共 4.0 GB，GitHub 单文件上限 100 MB，必然被拒
+models/diffusion/
+models/**/*.safetensors
+models/**/*.ckpt
+models/**/*.bin
+models/**/*.pth
+
+# 高清超分素材：55 品牌图的衍生二进制，README 明确「不推图片」
+data/images_hd/
+
+# 衣橱资产：36 件「已换装人像」切出的条带 + 轮廓 + 蒙版，
+# 属上传人像的衍生数据，不入库。clone 后用 scripts/import_wardrobe.py 自备源图重建。
+data/wardrobe/
+
+# 人脸打码台账：记录本机绝对路径与 mtime，属本机状态，不入库
+.facemask_state.json
+**/.facemask_state.json
+
+# report/ 下含未打码人像的证据图（合成图、前后对比、品牌调优总表）一律不入库；
+# 只放行 3 张已确认无人脸或五官不可辨认的展示图。
+report/*
+!report/wardrobe_face_mask.png
+!report/sprite_watermark_fix.png
+!report/lettering_before_after.png

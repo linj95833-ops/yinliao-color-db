@@ -1,0 +1,82 @@
+# 逐品牌包装贴图微调表 —— 55 个品牌逐个调过，缺省字段回落到 config.py 的 WRAP_* 默认值
+#
+# crop        [x1,y1,x2,y2] 归一化，先把源图裁到产品 / 标签主视觉（白底小瓶图的关键）
+# word_y     主视觉在衣服上的竖直落点，与「窗口取景」解耦；避开 V 领凹口
+# crisp      0~1 低分辨率包装字的颜色归位重锐化（配合 crisp_sharp / crisp_sigma）
+# curve_order  胸廓形变插值阶数，3 = 三次插值，字更不易糊（默认 1）
+# 不提供任何程序绘制/打印品牌字的参数：衣服上只出现包装图自带的艺术字与图案。
+# 源图主字被领口吞掉或太糊时，用 focus / word_y / zoom / crisp 调整取景与锐化，
+# 或换一张更清晰的正面包装图，不再用印刷体补字。
+# keep_body_white  1 = 白色罐体/透明瓶身的「瓶体白」保留原样，只补掉瓶外摄影棚白底；
+#                  用彩色像素外接框区分瓶内白与瓶外白，并跳过 tint 染色与两侧反光裁切。
+# focus       [y1,y2] 或 [x1,y1,x2,y2]，标签内「主字 / 主图案」所在的窗口（白底瓶的关键）
+# tint_mix    染色目标里品牌主色的占比（默认 0.55，越大颜色越浓）
+# rotate      90° 旋转次数 0~3（横版包装需要时）
+# tint        0~1，把「亮且低饱和」的白瓶 / 白底染成品牌浅色调，深色文字与图案保留
+# tint_hex    覆盖染色用的颜色（默认取该品牌实测主色）
+# bg_mix      0~1，把与边框连通的白底补成品牌主色（产品占比很小时用）
+# bright / contrast / boost   亮度 / 对比 / 饱和度补偿，1 = 不变
+# zoom        >1 放大标签窗口，让主字更大；<1 缩小
+# trim_top / trim_bottom      额外裁掉标签上下端的比例（默认 0.10 / 0.06，聚焦后一般调小）
+# anchor / text_pos           包装主字在标签内 / 在衣服上的竖直位置
+# side_pad / fill_w / fill_h / lower_mix / sharp / curve / arc   其它几何微调
+#
+# 康师傅冰红茶是效果基准：留空 {}，任何默认值变动都不会让它退化。
+version: 1
+defaults: {}
+brands:
+  ad_calcium_milk: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.321, 0.015, 0.705, 0.913], "tint": 0.5, "boost": 1.2, "contrast": 1.18, "zoom": 1.0, "anchor": 0.5, "focus": [0.5, 1.0], "word_y": 0.48}  # 娃哈哈AD钙奶 · 800x800 · 白底80%
+  beibingyang: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.36, 0.02, 0.64, 0.99], "tint": 0.6, "boost": 1.2, "contrast": 1.06, "zoom": 1.08, "word_y": 0.54}  # 北冰洋 · 780x439 · 白底78%
+  bingfeng: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.186, 0.073, 0.735, 0.924], "anchor": 0.42}  # 冰峰 · 800x800 · 白底62%
+  calpis: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.324, 0.154, 0.67, 0.971], "tint": 0.6, "boost": 1.2, "contrast": 1.06, "zoom": 1.15}  # 可尔必思 · 800x800 · 白底90%
+  cestbon: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.314, 0.396, 0.689, 0.835], "tint": 0.6, "boost": 1.2, "contrast": 1.2, "zoom": 1.15, "word_y": 0.32}  # 怡宝 · 800x800 · 白底84%
+  coca_cola: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.229, 0.04, 0.77, 0.914], "word_y": 0.5}  # 可口可乐 · 800x800 · 白底61%
+  coconut_palm: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.278, 0.081, 0.728, 0.961], "bright": 1.35, "contrast": 1.12, "boost": 1.15}  # 椰树牌椰汁 · 658x658 · 白底1%
+  dongpeng: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.316, 0.15, 0.68, 0.944], "tint": 0.6, "boost": 1.2, "contrast": 1.18, "zoom": 1.0, "anchor": 0.5, "focus": [0.2, 0.68], "text_pos": 0.48, "word_y": 0.34, "crisp": 0.45, "curve_order": 3}  # 东鹏特饮 · 231x234 · 白底79%
+  dr_pepper: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.3, 0.16, 0.72, 0.9], "tint": 0.6, "boost": 1.2, "contrast": 1.06}  # 胡椒博士 · 270x270 · 白底87%
+  evian: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.307, 0, 0.674, 1], "tint": 0.5, "boost": 1.5, "contrast": 1.35, "zoom": 1.0, "bg_mix": 0.4, "anchor": 0.5, "focus": [0.25, 0.72], "tint_mix": 0.7, "word_y": 0.32}  # 依云 · 266x266 · 白底88%
+  fanta: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.294, 0.152, 0.706, 0.832], "tint": 0.6, "boost": 1.2, "contrast": 1.06}  # 芬达 · 243x243 · 白底79%
+  ganten: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.322, 0.065, 0.683, 0.982], "tint": 0.75, "boost": 1.2, "contrast": 1.22, "anchor": 0.5, "zoom": 1.0, "bg_mix": 0.45, "focus": [0.0, 0.35], "word_y": 0.52}  # 百岁山 · 227x234 · 白底83%
+  gatorade: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.348, 0.112, 0.652, 0.884], "tint": 0.6, "boost": 1.2, "contrast": 1.2, "zoom": 1.0, "anchor": 0.5, "focus": [0.28, 0.72], "crisp": 0.8, "crisp_sharp": 1.2, "curve_order": 3, "sharp": 0.6}  # 佳得乐 · 209x234 · 白底85%
+  genki_forest: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.369, 0.385, 0.641, 0.944], "tint": 0.85, "boost": 1.3, "contrast": 1.38, "zoom": 1.0, "anchor": 0.5, "bg_mix": 0.5, "focus": [0.0, 0.45], "tint_mix": 0.7, "word_y": 0.54}  # 元气森林 · 213x234 · 白底83%
+  heytea: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.319, 0.193, 0.665, 0.91], "tint": 0.8, "boost": 1.2, "contrast": 1.28, "zoom": 1.0, "anchor": 0.5, "focus": [0.2, 0.68], "word_y": 0.5}  # 喜茶 · 192x234 · 白底88%
+  huiyuan: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.161, 0.045, 0.859, 0.987], "contrast": 1.1}  # 汇源 · 204x286 · 白底50%
+  jiaduobao: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.235, 0.128, 0.733, 0.892]}  # 加多宝 · 248x249 · 白底68%
+  jianlibao: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.34, 0.08, 0.68, 0.94], "tint": 0.8, "boost": 1.2, "contrast": 1.06, "zoom": 1.0, "bg_mix": 0.4, "anchor": 0.5, "focus": [0.08, 0.95]}  # 健力宝 · 382x237 · 白底83%
+  jingtian: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.294, 0.124, 0.675, 0.964], "tint": 0.6, "boost": 1.2, "contrast": 1.25, "anchor": 0.5, "zoom": 1.0, "focus": [0.6, 1.0], "word_y": 0.54}  # 景田 · 228x228 · 白底83%
+  kangshifu: {}  # 康师傅 · 270x270 · 白底75%
+  laoshan_cola: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.297, 0.137, 0.694, 0.875], "tint": 0.6, "boost": 1.2, "contrast": 1.06}  # 崂山可乐 · 211x234 · 白底77%
+  lipton_ice_tea: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.36, 0.08, 0.7, 0.96], "zoom": 1.2, "anchor": 0.5, "contrast": 1.15, "focus": [0.04, 0.76], "word_y": 0.52}  # 立顿冰红茶 · 292x234 · 白底67%
+  luckin_coffee: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.1, 0.02, 0.9, 0.82], "tint": 0, "boost": 1.2, "contrast": 1.2, "bg_hex": "#FFFFFF", "bg_mix": 1.0, "zoom": 1.0, "anchor": 0.5}  # 瑞幸咖啡 · 237x244 · 白底77%
+  minute_maid: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.331, 0.048, 0.683, 0.982], "tint": 0.6, "boost": 1.2, "contrast": 1.2, "anchor": 0.5, "zoom": 1.0, "focus": [0.42, 1.0], "word_y": 0.58}  # 美汁源 · 227x234 · 白底80%
+  mirinda: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.321, 0.038, 0.636, 0.962], "tint": 0.6, "boost": 1.4, "contrast": 1.25, "bright": 1.75, "anchor": 0.5, "zoom": 1.0, "focus": [0.2, 0.72], "crisp": 0.5, "curve_order": 3}  # 美年达 · 253x253 · 白底82%
+  mixue: {"trim_top": 0.03, "trim_bottom": 0.03, "zoom": 0.95, "anchor": 0.6, "text_pos": 0.45, "focus": [0.45, 1.0], "word_y": 0.36}  # 蜜雪冰城 · 313x234 · 白底13%
+  mizone: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.341, 0.048, 0.714, 0.961], "tint": 0.6, "boost": 1.2, "contrast": 1.06, "word_y": 0.36}  # 脉动 · 234x234 · 白底77%
+  monster_energy: {"trim_top": 0.03, "trim_bottom": 0.03, "bright": 1.35, "contrast": 1.12, "boost": 1.15}  # 魔爪 · 165x400 · 白底5%
+  mountain_dew: {"trim_top": 0.03, "trim_bottom": 0.03, "bright": 1.35, "contrast": 1.12, "boost": 1.15, "word_y": 0.5}  # 激浪 · 300x400 · 白底1%
+  nescafe: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.311, 0.037, 0.693, 0.967], "tint": 0.6, "boost": 1.2, "contrast": 1.22, "bright": 1.35, "word_y": 0.5}  # 雀巢咖啡 · 243x243 · 白底77%
+  nongfu_spring: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.33, 0, 0.67, 0.88], "tint": 0.8, "boost": 1.2, "contrast": 1.06, "zoom": 1.0, "anchor": 0.5, "bg_mix": 0.45, "focus": [0.62, 1.0]}  # 农夫山泉 · 219x234 · 白底84%
+  oriental_leaves: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.332, 0.112, 0.657, 0.981], "tint": 0.6, "boost": 1.2, "contrast": 1.32, "word_y": 0.54}  # 东方树叶 · 270x270 · 白底81%
+  pepsi: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.256, 0.167, 0.733, 0.803], "tint": 0.6, "boost": 1.2, "contrast": 1.06}  # 百事可乐 · 189x234 · 白底76%
+  perrier: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.337, 0.066, 0.659, 0.926], "tint": 0.6, "boost": 1.2, "contrast": 1.3, "anchor": 0.5, "zoom": 1.0, "focus": [0.55, 0.95]}  # 巴黎水 · 274x274 · 白底84%
+  pocari_sweat: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.334, 0.164, 0.674, 0.57], "tint": 0.6, "boost": 1.2, "contrast": 1.06, "zoom": 1.15}  # 宝矿力水特 · 244x244 · 白底80%
+  powerade: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.313, 0.19, 0.683, 0.999], "contrast": 1.15, "tint": 0.35, "word_y": 0.6}  # 动乐 · 270x270 · 白底54%
+  ramune: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.26, 0.02, 0.72, 0.99], "tint": 0.6, "boost": 1.4, "contrast": 1.35, "anchor": 0.5, "zoom": 1.0, "bg_mix": 0.35, "focus": [0.35, 0.95], "crisp": 0.6, "curve_order": 3}  # 波子汽水 · 266x266 · 白底78%
+  red_bull: {"trim_top": 0.03, "trim_bottom": 0.03, "word_y": 0.36}  # 红牛 · 279x234 · 白底1%
+  ribena: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.332, 0, 0.641, 0.982], "tint": 0.35, "boost": 1.2, "contrast": 1.18, "bright": 1.28}  # 利宾纳 · 226x234 · 白底83%
+  san_pellegrino: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.36, 0.163, 0.625, 0.867], "tint": 0.6, "boost": 1.3, "contrast": 1.35, "zoom": 1.0, "anchor": 0.5, "focus": [0.28, 0.56], "crisp": 0.7, "curve_order": 3}  # 圣培露 · 266x266 · 白底88%
+  schweppes: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.339, 0.067, 0.654, 0.725], "tint": 0.6, "boost": 1.2, "contrast": 1.15, "zoom": 1.15, "bright": 1.25}  # 怡泉 · 273x273 · 白底85%
+  scream: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.333, 0.398, 0.667, 0.987], "crisp": 0.5, "curve_order": 3, "contrast": 1.25}  # 尖叫 · 234x234 · 白底50%
+  seven_up: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.193, 0, 0.795, 1], "anchor": 0.5, "zoom": 1.15, "contrast": 1.3, "boost": 1.3, "focus": [0.7, 0.96], "crisp": 0.5, "curve_order": 3}  # 七喜 · 171x241 · 白底58%
+  six_walnuts: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.3, 0.106, 0.7, 0.964], "keep_body_white": 1, "boost": 1.2, "contrast": 1.06, "bg_mix": 0.9, "bg_hex": "#F4F7FB", "focus": [0.0, 0.62], "anchor": 0.5, "word_y": 0.68, "zoom": 0.78}  # 六个核桃 · 245x245 · 白底82% · 白罐体保留 + 包装自带竖排四字
+  sprite: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.246, 0.102, 0.746, 0.893], "crisp": 0.5, "curve_order": 3}  # 雪碧 · 228x228 · 白底67%
+  starbucks: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.033, 0.116, 0.913, 0.875], "tint": 0.3, "boost": 1.2, "contrast": 1.06}  # 星巴克 · 221x234 · 白底76%
+  tea_pi: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.338, 0.197, 0.658, 0.886], "tint": 0.75, "boost": 1.2, "contrast": 1.12, "zoom": 1.0, "anchor": 0.5, "focus": [0.2, 0.72]}  # 茶π · 252x252 · 白底88%
+  tropicana: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.271, 0.031, 0.658, 0.948], "tint": 0.6, "boost": 1.2, "contrast": 1.1, "anchor": 0.6, "word_y": 0.6}  # 纯果乐 · 183x234 · 白底76%
+  uni_president: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.31, 0.125, 0.656, 0.995], "tint": 0.6, "boost": 1.2, "contrast": 1.18, "word_y": 0.56}  # 统一 · 232x234 · 白底79%
+  vita_lemon_tea: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.184, 0.073, 0.758, 0.948]}  # 维他柠檬茶 · 224x234 · 白底58%
+  vitasoy: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.227, 0.032, 0.801, 0.935]}  # 维他奶 · 244x244 · 白底63%
+  wahaha: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.33, 0.327, 0.662, 0.603], "tint": 0.8, "boost": 1.2, "contrast": 1.12, "zoom": 1.0, "bg_mix": 0.45, "focus": [0.05, 0.72], "anchor": 0.5, "crisp": 0.8, "crisp_sharp": 1.1, "curve_order": 3}  # 娃哈哈 · 244x244 · 白底93%
+  wanglaoji: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.243, 0.092, 0.76, 0.897]}  # 王老吉 · 273x273 · 白底65%
+  wangzai_milk: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.259, 0.233, 0.737, 0.839], "tint": 0.6, "boost": 1.2, "contrast": 1.06}  # 旺仔牛奶 · 235x236 · 白底78%
+  yakult: {"trim_top": 0.03, "trim_bottom": 0.03, "crop": [0.284, 0.146, 0.703, 0.85], "tint": 0.45, "boost": 1.2, "contrast": 1.15, "anchor": 0.45, "zoom": 1.05}  # 养乐多 · 226x234 · 白底81%

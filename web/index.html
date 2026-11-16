@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>衣服颜色 → 饮料品牌</title>
+<style>
+:root{color-scheme:light}
+*{box-sizing:border-box}
+/* id/类上的 display 会盖掉浏览器默认 [hidden]，必须显式声明 */
+[hidden]{display:none !important}
+body{margin:0;background:#f5f7fa;color:#1c2026;
+ font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:30px 22px 60px}
+h1{font-size:24px;margin:0 0 6px}
+.lead{color:#5b6472;margin:0 0 14px}
+.stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px}
+.stats span{background:#e9eef5;color:#43506a;border-radius:20px;padding:3px 12px;font-size:12px}
+.cols{display:grid;grid-template-columns:340px 1fr;gap:18px}
+@media(max-width:820px){.cols{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid #e3e6eb;border-radius:12px;padding:18px;
+ box-shadow:0 1px 4px rgba(20,30,50,.04)}
+.drop{border:2px dashed #c8d2e0;border-radius:10px;padding:34px 14px;text-align:center;
+ color:#5b6472;cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:#d64747;background:#fff7f7;color:#b43636}
+#preview{width:100%;max-height:300px;object-fit:contain;display:block;margin-top:14px;
+ border-radius:8px;border:1px solid #e3e6eb}
+button{margin-top:16px;width:100%;background:#d64747;color:#fff;border:0;border-radius:8px;
+ padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer}
+button:disabled{background:#c9ced7;cursor:not-allowed}
+button.again{width:auto;margin:6px 0 0;padding:5px 10px;font-size:11px;font-weight:500;
+ background:#43506a;border-radius:6px}
+#composite{margin-bottom:16px}
+#compositeImg{width:100%;max-height:440px;object-fit:contain;display:block;
+ border-radius:8px;border:1px solid #e3e6eb}
+.comprow{display:flex;gap:10px;align-items:center;justify-content:space-between;
+ flex-wrap:wrap;margin-top:8px;font-size:11px;color:#7b8492}
+.comprow a{color:#1a6fbf;text-decoration:none;white-space:nowrap}
+.comprow a:hover{text-decoration:underline}
+details{margin-top:16px;border-top:1px solid #eef1f5;padding-top:12px}
+summary{cursor:pointer;color:#43506a;font-size:13px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+label{font-size:11px;color:#7b8492;display:block}
+input[type=number]{width:100%;padding:6px;border:1px solid #d9dfe8;border-radius:6px;
+ font-size:12px;color:#1c2026}
+input[type=text]{width:100%;padding:8px;border:1px solid #d9dfe8;border-radius:6px;
+ font-size:12px;color:#1c2026;margin-top:6px}
+button.mini{margin-top:8px;background:#43506a;font-size:13px;padding:8px}
+.manual{margin-top:16px;border-top:1px solid #eef1f5;padding-top:12px}
+.opts{margin-top:12px;font-size:12px;color:#5b6472;display:flex;gap:16px;flex-wrap:wrap}
+.status{margin-top:12px;font-size:12px;color:#b43636;min-height:18px}
+.q{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.dom{width:76px;height:76px;display:block;border-radius:10px;border:1px solid #cbd1da;flex:none}
+.q b{font-size:18px}.q small{display:block;color:#8a93a0}
+.palette{display:flex;gap:10px;flex-wrap:wrap}
+.pc{text-align:center;font-size:10px;color:#7b8492}
+.pc i{display:block;width:42px;height:42px;border-radius:7px;border:1px solid #cbd1da}
+#debug{width:100%;max-height:330px;object-fit:contain;border-radius:8px;
+ border:1px solid #e3e6eb;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px;border:1px solid #e8ebf0;border-radius:9px;
+ padding:10px 12px;margin-bottom:8px}
+.rank{font-weight:700;color:#98a2b0;width:32px}
+.main-sw{width:44px;height:44px;display:block;border-radius:8px;border:1px solid #cbd1da;flex:none}
+.info{flex:1;min-width:140px}.info b{font-size:15px}.info small{display:block;color:#98a2b0;font-size:11px}
+.metrics{text-align:right;font-size:12px;min-width:120px}
+.metrics .de{font-weight:600}.metrics .sc{color:#1a7f4b;margin-left:8px}
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:9px;margin-top:3px}
+.tag.ok{background:#e5f5ec;color:#1a7f4b}.tag.seed{background:#fff3d9;color:#9a6700}
+.vec i{display:inline-block;width:14px;height:14px;border-radius:3px;border:1px solid #cbd1da;
+ margin-right:3px;vertical-align:middle}
+.pairs{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.pair{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:#8a93a0}
+.pair i{width:11px;height:11px;border-radius:2px;border:1px solid #cbd1da}
+.pair b{font-weight:400}
+.picked{background:#e5f5ec;color:#1a7f4b;font-size:10px;padding:1px 7px;
+ border-radius:9px;margin-left:6px}
+.filebar{display:flex;gap:8px;margin-top:10px}
+.filebar button{margin-top:0;flex:1;width:auto}
+button.ghost{background:#eef1f6;color:#43506a;border:1px solid #d9dfe8}
+.brandpick label{font-size:12px;color:#43506a;font-weight:600}
+#brandSearch{margin-top:6px}
+.pickerow{display:flex;gap:8px;align-items:center;margin-top:8px}
+select{flex:1;min-width:0;width:100%;padding:8px;border:1px solid #d9dfe8;border-radius:6px;
+ font-size:12px;color:#1c2026;background:#fff}
+.picksw{width:30px;height:30px;border-radius:7px;border:1px solid #cbd1da;
+ flex:none;display:block;background:#ccc}
+.pickhint{font-size:11px;color:#7b8492;margin-top:7px;min-height:18px}
+.pickhint i{display:inline-block;width:12px;height:12px;border-radius:3px;
+ border:1px solid #cbd1da;vertical-align:middle;margin:0 2px}
+#randomBrand{margin-top:6px}
+.stylepick select{margin-top:6px}
+.hint{color:#8a93a0;font-size:11px;margin-top:14px}
+code{font-size:11px;color:#374151}
+/* 手机端：避免 iOS 聚焦输入框时自动缩放，并加大触控目标 */
+@media(max-width:480px){
+  .wrap{padding:18px 12px 44px}
+  h1{font-size:20px}
+  .panel{padding:14px}
+  .drop{padding:24px 10px}
+  input[type=text],input[type=number],select{font-size:16px}
+  button{font-size:16px;padding:13px 16px}
+  .brand{flex-wrap:wrap}
+  .metrics{min-width:0;text-align:left}
+  .q{gap:12px}
+  .grid4{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>衣服颜色 → 饮料品牌</h1>
+  <p class="lead">上传人像照片，按色调分割出衣服真实轮廓并提取多个主色，与品牌包装色板做联合匹配；
+    随后把饮料包装上的真实图案与文字「穿」到衣服上，保留原图的肩部高光与褶皱，原号码/印花一并覆盖。</p>
+  <div class="stats" id="stats"></div>
+  <div class="cols">
+    <section class="panel">
+      <div class="drop" id="drop">点击选择，或把人像照片拖到这里
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+      <img id="preview" hidden alt="预览">
+      <div class="filebar" id="filebar" hidden>
+        <button type="button" class="mini ghost" id="clearPhoto">移除照片</button>
+        <button type="button" class="mini ghost" id="changePhoto">换一张</button>
+      </div>
+      <details>
+        <summary>识别参数（构图特殊时调这里）</summary>
+        <label style="margin-top:10px">取色提示区（0–1 归一化：左,上,右,下）<br>
+          <small style="color:#98a2b0">仅用于找衣服颜色，衣服形状由色调分割自动识别，不受矩形限制</small></label>
+        <div class="grid4">
+          <div><label>左</label><input type="number" id="x1" value="0.25" step="0.01" min="0" max="1"></div>
+          <div><label>上</label><input type="number" id="y1" value="0.28" step="0.01" min="0" max="1"></div>
+          <div><label>右</label><input type="number" id="x2" value="0.75" step="0.01" min="0" max="1"></div>
+          <div><label>下</label><input type="number" id="y2" value="0.88" step="0.01" min="0" max="1"></div>
+        </div>
+        <div class="opts">
+          <label><input type="checkbox" id="skin" checked> 排除肤色</label>
+          <label><input type="checkbox" id="bg" checked> 排除背景色</label>
+        </div>
+        <div style="margin-top:12px">
+          <label for="segEngine" style="display:block;margin-bottom:4px">衣服分割引擎</label>
+          <select id="segEngine" style="width:100%">
+            <option value="auto">自动 · 语义模型优先，识别不出人时降级（推荐）</option>
+            <option value="model">语义模型 · 强制用人体解析</option>
+            <option value="tone">色调启发式 · 旧版算法</option>
+          </select>
+          <small id="engineState" style="color:#98a2b0;display:block;margin-top:6px">正在检测本地模型…</small>
+        </div>
+      </details>
+      <div class="manual stylepick">
+        <label for="styleSelect">合成效果</label>
+        <select id="styleSelect">
+          <option value="wrap">包装贴图 · 把饮料包装穿上身（推荐）</option>
+          <option value="garment">基准衣服迁移 · 用真实换装照片变形贴合</option>
+          <option value="print">平涂印花 · 纯主色 + 程序字样</option>
+        </select>
+        <div class="pickhint" id="styleHint">包装贴图使用品牌图上的真实文字与图案，并按原图明暗保留褶皱；包装图不可用时会自动回退到平涂印花。</div>
+        <div id="garmentPick" hidden style="margin-top:10px">
+          <label for="garmentSelect" style="display:block;margin-bottom:4px">选择基准衣服</label>
+          <select id="garmentSelect" aria-label="选择基准衣服"></select>
+          <div class="pickhint" id="garmentInfo">正在加载基准衣服资产…</div>
+          <button class="mini" id="applyGarment" type="button">用这件基准衣服生成新图</button>
+        </div>
+      </div>
+      <button id="run" disabled>开始匹配</button>
+      <div class="manual brandpick">
+        <label for="brandSelect">选择饮料，给人像「穿上」</label>
+        <input type="text" id="brandSearch" placeholder="搜索中文名 / 英文名 / 品牌 key" autocomplete="off">
+        <div class="pickerow">
+          <span class="picksw" id="brandSw"></span>
+          <select id="brandSelect" aria-label="选择饮料品牌"></select>
+        </div>
+        <div class="pickhint" id="brandPickInfo">正在加载品牌清单…</div>
+        <button class="mini" id="applyBrand" type="button">用这个饮料生成新图</button>
+        <button class="mini ghost" id="randomBrand" type="button">随便来一个</button>
+      </div>
+      <div class="manual">
+        <label for="colors">或直接指定多个颜色（联合匹配，逗号分隔）</label>
+        <input type="text" id="colors" placeholder="#E60012,#004B93,#FFD100">
+        <button class="mini" id="runColors">用多个颜色匹配</button>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="hint">照片只在本地处理，不会上传到任何服务器。每个品牌的档案都是图片实测色板；
+        把新图放进 <code>data/images/&lt;key&gt;_&lt;中文名&gt;/</code> 后执行 <code>scan</code> 即更新。</div>
+    </section>
+    <section class="panel" id="result" hidden>
+      <div id="composite" hidden>
+        <img id="compositeImg" alt="衣服换色合成图">
+        <div class="comprow">
+          <span id="compositeInfo"></span>
+          <a id="compositeDl" download="composite.png">下载合成图 PNG</a>
+        </div>
+      </div>
+      <img id="debug" alt="识别区域标注">
+      <div class="q" id="query"></div>
+      <div id="brands"></div>
+    </section>
+  </div>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const HEX = /^#[0-9A-Fa-f]{6}$/;
+let photoData = null;
+let allBrands = [];
+let allGarments = [];
+
+// 合成参数随「合成效果」联动：选基准衣服迁移时附带 garment_id
+function composeParams() {
+  const o = {style: $('styleSelect').value};
+  if (o.style === 'garment') o.garment_id = $('garmentSelect').value || undefined;
+  return o;
+}
+const STYLE_HINTS = {
+  wrap: '包装贴图使用品牌图上的真实文字与图案，并按原图明暗保留褶皱；包装图不可用时会自动回退到平涂印花。',
+  garment: '从已换装的基准照片里精确切出衣服（含真实褶皱、透视与单个居中 logo），按你照片里的衣服轮廓逐行拉伸变形后覆盖；资产不可用时自动回退包装贴图。',
+  print: '衣服整体换成品牌主色，再由程序绘制字样与元素，不使用包装图片。'
+};
+function updateStyleUI() {
+  const s = $('styleSelect').value;
+  $('garmentPick').hidden = s !== 'garment';
+  $('styleHint').textContent = STYLE_HINTS[s] || '';
+}
+$('styleSelect').addEventListener('change', updateStyleUI);
+
+const swatch = (hex, cls) => {
+  const el = document.createElement('i');
+  el.style.background = HEX.test(hex || '') ? hex : '#cccccc';
+  if (cls) el.className = cls;
+  return el;
+};
+const text = (tag, cls, value) => {
+  const el = document.createElement(tag);
+  if (cls) el.className = cls;
+  el.textContent = value == null ? '' : String(value);
+  return el;
+};
+
+fetch('/api/stats').then(r => r.json()).then(s => {
+  $('stats').append(
+    text('span', '', `品牌 ${s.brands}`),
+    text('span', '', `图片 ${s.images}`),
+    text('span', '', `实测档案 ${s.profiles_from_images}`),
+    text('span', '', `占位档案 ${s.profiles_seed_only}`),
+    text('span', '', `基准衣服 ${(s.garments || {}).count || 0}`)
+  );
+}).catch(() => {});
+
+// ---- 基准衣服选择器：离线资产，运行时不加载任何模型 ----
+fetch('/api/garments').then(r => r.json()).then(d => {
+  allGarments = d.items || [];
+  const sel = $('garmentSelect');
+  sel.replaceChildren();
+  allGarments.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g.id;
+    o.textContent = `${g.id.slice(0, 2)} ${g.name_cn} · ` +
+      (g.layout_class === 'local_print' ? '单个印花' : '满版包装');
+    sel.appendChild(o);
+  });
+  $('garmentInfo').textContent = allGarments.length
+    ? `共 ${allGarments.length} 件；图案随目标衣服的肩线 / 领口 / 躯干轮廓变形`
+    : '基准资产库为空，请先运行 scripts/build_garments.py';
+  updateStyleUI();
+}).catch(() => { $('garmentInfo').textContent = '基准资产加载失败'; });
+
+$('applyGarment').addEventListener('click', () => {
+  const g = allGarments.find(x => x.id === $('garmentSelect').value);
+  if (g && g.brand_key) { $('brandSelect').value = g.brand_key; updateBrandInfo(); }
+  applyBrand($('brandSelect').value);
+});
+
+// ---- 饮料选择器：从 /api/brands 拉全量品牌，可搜索、可看主色与色板 ----
+function updateBrandInfo() {
+  const key = $('brandSelect').value;
+  const b = allBrands.find(x => x.key === key);
+  const info = $('brandPickInfo');
+  if (!b) {
+    $('brandSw').style.background = '#cccccc';
+    info.textContent = '没有匹配的饮料，换个关键词试试';
+    return;
+  }
+  $('brandSw').style.background = b.brand_hex;
+  info.replaceChildren(
+    text('b', '', `${b.name_cn} · ${b.brand_hex}`),
+    text('span', '', ` ${b.region_label}/${b.category_label} · 色板 `)
+  );
+  (b.palette || []).forEach(h => info.append(swatch(h)));
+}
+
+function renderBrandOptions(filter) {
+  const q = (filter || '').trim().toLowerCase();
+  const sel = $('brandSelect');
+  const keep = sel.value;
+  sel.replaceChildren();
+  const list = allBrands.filter(b => !q ||
+    [b.name_cn, b.name_en, b.key, b.category_label, b.region_label, b.brand_hex]
+      .some(v => String(v).toLowerCase().includes(q)));
+  if (!list.length) {
+    const o = document.createElement('option');
+    o.value = ''; o.textContent = '没有匹配的饮料'; o.disabled = true;
+    sel.append(o);
+  } else {
+    list.forEach(b => {
+      const o = document.createElement('option');
+      o.value = b.key;
+      o.textContent = `${b.name_cn}${b.name_en ? ' · ' + b.name_en : ''} · ${b.brand_hex}`;
+      sel.append(o);
+    });
+    if (list.some(b => b.key === keep)) sel.value = keep;
+    else sel.value = list[0].key;   // 不依赖浏览器自动选中第一项
+  }
+  updateBrandInfo();
+}
+
+fetch('/api/brands').then(r => r.json()).then(d => {
+  allBrands = d.brands || [];
+  renderBrandOptions('');
+}).catch(err => {
+  $('brandPickInfo').textContent = '品牌清单加载失败：' + err.message;
+});
+$('brandSearch').addEventListener('input', e => renderBrandOptions(e.target.value));
+$('brandSelect').addEventListener('change', updateBrandInfo);
+$('applyBrand').addEventListener('click', () => applyBrand($('brandSelect').value));
+$('randomBrand').addEventListener('click', () => {
+  if (!allBrands.length) return;
+  const b = allBrands[Math.floor(Math.random() * allBrands.length)];
+  $('brandSearch').value = '';
+  renderBrandOptions('');
+  $('brandSelect').value = b.key;
+  updateBrandInfo();
+  $('status').textContent = `随机选中 ${b.name_cn}（${b.brand_hex}），点上方按钮应用到人像`;
+});
+
+async function applyBrand(key) {
+  if (!photoData) { $('status').textContent = '请先上传人像照片，再选择饮料'; return; }
+  if (!key) { $('status').textContent = '请先选择一个饮料'; return; }
+  const btn = $('applyBrand');
+  btn.disabled = true; $('status').textContent = '正在把整件衣服换成所选饮料…';
+  const box = ['x1','y1','x2','y2'].map(k => parseFloat($(k).value));
+  try {
+    const res = await fetch('/api/match', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        image: photoData, box, key, top: 8, ...composeParams(),
+        exclude_skin: $('skin').checked, exclude_bg: $('bg').checked, engine: $('segEngine').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '生成失败');
+    render(data);
+    const name = data.composite ? data.composite.brand_name : key;
+    $('status').textContent = `已用 ${name} 生成新图；report/composite.png 与结果页已更新`;
+  } catch (err) {
+    $('status').textContent = '出错：' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function clearPhoto() {
+  photoData = null;
+  $('file').value = '';
+  $('preview').hidden = true; $('preview').removeAttribute('src');
+  $('filebar').hidden = true;
+  $('run').disabled = true;
+  $('result').hidden = true;
+  showComposite(null);
+  $('debug').hidden = true; $('debug').removeAttribute('src');
+  $('query').replaceChildren(); $('brands').replaceChildren();
+  $('status').textContent = '照片已移除，可以重新上传或拖拽一张新的';
+}
+
+function loadFile(file) {
+  if (!file || !file.type.startsWith('image/')) { $('status').textContent = '请选择图片文件'; return; }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const raw = reader.result;
+    const show = (data) => {
+      photoData = data;
+      $('preview').src = photoData; $('preview').hidden = false;
+      $('filebar').hidden = false;
+      $('run').disabled = false;
+      $('status').textContent = (data !== raw) ? '大图已自动压缩，便于手机上传' : '';
+    };
+    // 手机直出照片常有 4000px / 10MB 以上，base64 后容易超过服务端上限；
+    // 先在浏览器里缩到 1600px 长边并转 JPEG，同时也顺手把 iPhone 的 HEIC 转成通用格式。
+    const img = new Image();
+    img.onload = () => {
+      const MAX_SIDE = 1600;
+      const longSide = Math.max(img.naturalWidth, img.naturalHeight);
+      if (longSide <= MAX_SIDE && raw.length <= 6 * 1024 * 1024) { show(raw); return; }
+      try {
+        const s = Math.min(1, MAX_SIDE / longSide);
+        const c = document.createElement('canvas');
+        c.width = Math.max(1, Math.round(img.naturalWidth * s));
+        c.height = Math.max(1, Math.round(img.naturalHeight * s));
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        show(c.toDataURL('image/jpeg', 0.9));
+      } catch (e) { show(raw); }
+    };
+    img.onerror = () => show(raw);
+    img.src = raw;
+  };
+  reader.readAsDataURL(file);
+}
+$('drop').addEventListener('click', () => { $('file').value = ''; $('file').click(); });
+$('file').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = '';   // 关键：清空后同一张图 / 新图都能再次触发 change
+  loadFile(f);
+});
+$('clearPhoto').addEventListener('click', clearPhoto);
+$('changePhoto').addEventListener('click', () => { $('file').value = ''; $('file').click(); });
+['dragenter', 'dragover'].forEach(t => $('drop').addEventListener(t, e => {
+  e.preventDefault(); $('drop').classList.add('over');
+}));
+['dragleave', 'drop'].forEach(t => $('drop').addEventListener(t, e => {
+  e.preventDefault(); $('drop').classList.remove('over');
+}));
+$('drop').addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
+
+$('run').addEventListener('click', async () => {
+  if (!photoData) return;
+  $('run').disabled = true; $('status').textContent = '正在识别衣服颜色…';
+  const box = ['x1','y1','x2','y2'].map(k => parseFloat($(k).value));
+  try {
+    const res = await fetch('/api/match', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        image: photoData, box, ...composeParams(),
+        exclude_skin: $('skin').checked, exclude_bg: $('bg').checked, engine: $('segEngine').value, top: 8
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '匹配失败');
+    render(data);
+    $('status').textContent = '完成，结果页已保存到 report/match_result.html';
+  } catch (err) {
+    $('status').textContent = '出错：' + err.message;
+  } finally {
+    $('run').disabled = false;
+  }
+});
+$('runColors').addEventListener('click', async () => {
+  const raw = $('colors').value.trim();
+  if (!raw) { $('status').textContent = '请用 #RRGGBB 格式输入颜色'; return; }
+  const hexes = raw.split(/[,，\s]+/).filter(Boolean);
+  $('runColors').disabled = true; $('status').textContent = '正在联合匹配…';
+  try {
+    const res = await fetch('/api/match', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({colors: hexes, top: 8})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '匹配失败');
+    render(data);
+    $('status').textContent = '完成，结果页已保存到 report/match_result.html';
+  } catch (err) {
+    $('status').textContent = '出错：' + err.message;
+  } finally {
+    $('runColors').disabled = false;
+  }
+});
+
+function showComposite(comp) {
+  const box = $('composite');
+  if (!comp || !comp.preview) {
+    box.hidden = true; $('compositeImg').removeAttribute('src');
+    $('compositeDl').removeAttribute('href');
+    return;
+  }
+  box.hidden = false;
+  $('compositeImg').src = comp.preview;
+  $('compositeDl').href = comp.download || comp.preview;
+  $('compositeDl').download = (comp.brand_key || 'composite') + '.png';
+  let styleText;
+  if (comp.compose_style === 'garment') {
+    const gm = comp.garment_meta || {};
+    styleText = `把基准「${gm.name_cn || comp.garment_id}」的衣服按轮廓变形穿上身 · `
+      + '真实褶皱与单个印花 · 原号码已覆盖';
+  } else if (comp.compose_style === 'wrap') {
+    styleText = `把 ${comp.brand_name} 包装穿上身 · 包装自带文字图案 + 原图光影 · 原号码已覆盖`;
+  } else {
+    styleText = `衣服整体换成 ${comp.brand_name}（${comp.brand_hex}）主色 · 印上品牌字样与元素`;
+  }
+  $('compositeInfo').textContent =
+    styleText + ` · 衣服覆盖 ${Math.round((comp.cloth_coverage || 0) * 100)}%` +
+    (comp.fallback_mask ? ' · 矩形取色兜底'
+      : comp.cloth_engine === 'model' ? ' · 语义解析轮廓' : ' · 色调分割轮廓') +
+    (comp.wrap_source ? ` · 包装图 ${comp.wrap_source}` : '') +
+    (comp.depth_warp ? ' · AI 形变场' : '') +
+    (comp.wrap_hd_source ? ' · 高清素材' : '') +
+    (comp.cloth_sleeves_trimmed > 0 ? ' · 袖子已排除' : '') +
+    (comp.garment_warp_rows ? ` · 轮廓变形 ${comp.garment_warp_rows.source.join('→')}` : '') +
+    (comp.wrap_fallback_reason ? ` · 已回退（${comp.wrap_fallback_reason}）` : '');
+}
+
+async function regen(key, btn) {
+  if (!photoData) return;
+  btn.disabled = true; $('status').textContent = `正在用 ${key} 生成合成图…`;
+  const box = ['x1','y1','x2','y2'].map(k => parseFloat($(k).value));
+  try {
+    const res = await fetch('/api/compose', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        image: photoData, box, key, top: 8, ...composeParams(),
+        exclude_skin: $('skin').checked, exclude_bg: $('bg').checked, engine: $('segEngine').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || '生成失败');
+    showComposite(data.composite);
+    $('status').textContent = `已切换到 ${data.composite.brand_name}；` +
+      'report/composite.png 与结果页已更新，可下载 PNG';
+  } catch (err) {
+    $('status').textContent = '出错：' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function render(data) {
+  $('result').hidden = false;
+  showComposite(data.composite);
+  if (data.compose_error) $('status').textContent = '合成图未生成：' + data.compose_error;
+  if (data.debug_image) {
+    $('debug').src = data.debug_image; $('debug').hidden = false;
+  } else {
+    $('debug').hidden = true; $('debug').removeAttribute('src');
+  }
+  const q = data.query;
+  const box = $('query'); box.replaceChildren();
+  const dom = swatch(q.dominant_hex, 'dom');
+  const info = document.createElement('div');
+  const cl = q.cloth || {};
+  const eng = q.engine || cl.engine;
+  const engTag = eng === 'model' ? ' · 语义模型' : eng === 'tone' ? ' · 色调分割' : '';
+  const note = q.semantic_note ? ` · 模型未采用（${q.semantic_note}）` : '';
+  const desc = q.mode === 'photo'
+    ? `置信度 ${q.confidence} · 衣服覆盖 ${Math.round((cl.coverage || q.coverage || 0) * 100)}%` +
+      ` · ${cl.method || q.method || '-'}${cl.fallback ? '（矩形兜底）' : ''}` +
+      engTag + note
+    : `${(q.palette || []).length} 个颜色联合匹配 · 默认等权`;
+  info.append(text('b', '', q.dominant_hex), text('small', '', desc));
+  const pal = document.createElement('div'); pal.className = 'palette';
+  q.palette && q.palette.forEach(c => {
+    const cell = document.createElement('div'); cell.className = 'pc';
+    cell.append(swatch(c.hex), text('span', '', c.hex), text('span', '', Math.round(c.ratio*100) + '%'));
+    pal.append(cell);
+  });
+  box.append(dom, info, pal);
+
+  const list = $('brands'); list.replaceChildren();
+  data.matches.forEach(m => {
+    const row = document.createElement('div'); row.className = 'brand';
+    const head = document.createElement('div'); head.className = 'info';
+    head.append(text('b', '', m.name_cn), text('span', '', ' ' + (m.name_en || '')),
+                text('small', '', `${m.key} · ${m.brand_hex}`));
+    const vec = document.createElement('div'); vec.className = 'vec';
+    (m.color_vector || []).slice(0,5).forEach(c => {
+      const s = swatch(c.hex); s.title = `${c.hex} ${Math.round((c.ratio || 0) * 100)}%`;
+      vec.append(s);
+    });
+    head.append(vec);
+    const pairs = document.createElement('div'); pairs.className = 'pairs';
+    (m.color_matches || []).slice(0,5).forEach(p => {
+      const line = document.createElement('span'); line.className = 'pair';
+      line.append(swatch(p.query_hex), text('b', '', '→'), swatch(p.brand_hex),
+                  text('b', '', `ΔE ${p.delta_e}`));
+      pairs.append(line);
+    });
+    head.append(pairs);
+    const metrics = document.createElement('div'); metrics.className = 'metrics';
+    metrics.append(text('span', 'de', '主色 ΔE ' + m.delta_e), text('span', 'sc', '匹配 ' + m.score),
+                   document.createElement('br'),
+                   text('span', m.profile_origin === 'images' ? 'tag ok' : 'tag seed', m.profile_origin_label),
+                   text('small', '', `联合 ΔE ${m.joint_delta_e} · 衣→品 ${m.query_to_brand} · 品→衣 ${m.brand_to_query}`),
+                   text('small', '', `置信度 ${m.profile_confidence} · 样本 ${m.samples} · 色板 ${m.brand_palette_size} 色`));
+    if (data.selected_key === m.key) metrics.append(text('span', 'picked', '已选用'));
+    if (photoData && q.mode === 'photo') {
+      const btn = document.createElement('button');
+      btn.className = 'again'; btn.textContent = '换成这个品牌生成';
+      btn.addEventListener('click', () => regen(m.key, btn));
+      metrics.append(document.createElement('br'), btn);
+    }
+    row.append(text('div', 'rank', '#' + m.rank), swatch(m.brand_hex, 'main-sw'), head, metrics);
+    list.append(row);
+  });
+  $('result').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+fetch('/api/stats').then(r => r.json()).then(s => {
+  const h = s.human || {};
+  $('engineState').textContent = (h.model_exists && h.runtime_ready)
+    ? `本地语义模型已就绪（${h.model_mb} MB）· 首次识别约 1–3 秒；插画/纯色示意图会自动降级。`
+    : '未检测到语义模型或推理库，将自动使用色调启发式（程序仍可正常使用）。';
+}).catch(() => {
+  $('engineState').textContent = '语义模型按人体部位识别上衣，复杂背景更稳。';
+});
+</script>
+</body>
+</html>

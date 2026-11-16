@@ -1,0 +1,67 @@
+# 饮料品牌清单 —— 第一阶段建库输入（非商用 / 娱乐用途）
+#
+# key           唯一标识（数据库/CLI/匹配结果都用它）；图片目录名 = key_中文名
+# region        cn / intl
+# category      品类，第二阶段用于缓解「同色品牌」歧义
+# queries       Wikimedia Commons 检索词；适配器自动追加 filetype:bitmap 并做标题过滤
+# aliases       标题过滤用的归一化别名（不区分大小写，忽略空格与连字符）
+# off_codes     Open Food Facts 条码（可选）。命中即为标准正面包装图，优先级最高
+# reference_hex 人工粗略参考主色，仅用于质检告警，绝不参与采集与匹配
+version: 1
+brands:
+  - {key: coca_cola, name_cn: 可口可乐, name_en: Coca-Cola, region: intl, category: carbonated, queries: ["Coca-Cola can", "Coca-Cola bottle"], aliases: ["cocacola", "coca cola", "coke"], off_codes: ["5449000000996"], reference_hex: "#E60012"}
+  - {key: pepsi, name_cn: 百事可乐, name_en: Pepsi, region: intl, category: carbonated, queries: ["Pepsi can", "Pepsi bottle"], aliases: ["pepsi"], reference_hex: "#004B93"}
+  - {key: sprite, name_cn: 雪碧, name_en: Sprite, region: intl, category: carbonated, queries: ["Sprite can", "Sprite bottle"], aliases: ["sprite"], reference_hex: "#00843D"}
+  - {key: fanta, name_cn: 芬达, name_en: Fanta, region: intl, category: carbonated, queries: ["Fanta can", "Fanta bottle"], aliases: ["fanta"], reference_hex: "#FF8200"}
+  - {key: mirinda, name_cn: 美年达, name_en: Mirinda, region: intl, category: carbonated, queries: ["Mirinda bottle", "Mirinda can"], aliases: ["mirinda"]}
+  - {key: seven_up, name_cn: 七喜, name_en: 7UP, region: intl, category: carbonated, queries: ["7UP can", "7 Up bottle"], aliases: ["7up", "7 up", "seven up"]}
+  - {key: mountain_dew, name_cn: 激浪, name_en: Mountain Dew, region: intl, category: carbonated, queries: ["Mountain Dew can", "Mountain Dew bottle"], aliases: ["mountain dew", "mdew"]}
+  - {key: dr_pepper, name_cn: 胡椒博士, name_en: Dr Pepper, region: intl, category: carbonated, queries: ["Dr Pepper can", "Dr Pepper bottle"], aliases: ["dr pepper", "drpepper"]}
+  - {key: schweppes, name_cn: 怡泉, name_en: Schweppes, region: intl, category: carbonated, queries: ["Schweppes bottle", "Schweppes can"], aliases: ["schweppes"]}
+  - {key: red_bull, name_cn: 红牛, name_en: Red Bull, region: intl, category: energy, queries: ["Red Bull can", "Red Bull bottle"], aliases: ["red bull", "redbull"], reference_hex: "#00306B"}
+  - {key: monster_energy, name_cn: 魔爪, name_en: Monster Energy, region: intl, category: energy, queries: ["Monster Energy can", "Monster Energy drink"], aliases: ["monster energy", "monster drink"]}
+  - {key: gatorade, name_cn: 佳得乐, name_en: Gatorade, region: intl, category: sports, queries: ["Gatorade bottle", "Gatorade drink"], aliases: ["gatorade"], reference_hex: "#FF6900"}
+  - {key: powerade, name_cn: 动乐, name_en: Powerade, region: intl, category: sports, queries: ["Powerade bottle", "Powerade drink"], aliases: ["powerade"]}
+  - {key: pocari_sweat, name_cn: 宝矿力水特, name_en: Pocari Sweat, region: intl, category: sports, queries: ["Pocari Sweat bottle", "Pocari Sweat can"], aliases: ["pocari", "pocari sweat"]}
+  - {key: evian, name_cn: 依云, name_en: Evian, region: intl, category: water, queries: ["Evian bottle", "Evian water bottle"], aliases: ["evian"], reference_hex: "#79BCE8"}
+  - {key: perrier, name_cn: 巴黎水, name_en: Perrier, region: intl, category: water, queries: ["Perrier bottle", "Perrier water"], aliases: ["perrier"], reference_hex: "#00A651"}
+  - {key: san_pellegrino, name_cn: 圣培露, name_en: San Pellegrino, region: intl, category: water, queries: ["San Pellegrino bottle", "S.Pellegrino bottle"], aliases: ["pellegrino", "san pellegrino"]}
+  - {key: lipton_ice_tea, name_cn: 立顿冰红茶, name_en: Lipton Ice Tea, region: intl, category: tea, queries: ["Lipton Ice Tea bottle", "Lipton Iced Tea can"], aliases: ["lipton"]}
+  - {key: tropicana, name_cn: 纯果乐, name_en: Tropicana, region: intl, category: juice, queries: ["Tropicana bottle", "Tropicana juice"], aliases: ["tropicana"]}
+  - {key: minute_maid, name_cn: 美汁源, name_en: Minute Maid, region: intl, category: juice, queries: ["Minute Maid bottle", "Minute Maid juice"], aliases: ["minute maid", "minutemaid"]}
+  - {key: ribena, name_cn: 利宾纳, name_en: Ribena, region: intl, category: juice, queries: ["Ribena bottle", "Ribena drink"], aliases: ["ribena"]}
+  - {key: yakult, name_cn: 养乐多, name_en: Yakult, region: intl, category: dairy, queries: ["Yakult bottle", "Yakult drink"], aliases: ["yakult"]}
+  - {key: calpis, name_cn: 可尔必思, name_en: Calpis, region: intl, category: dairy, queries: ["Calpis bottle", "Calpis drink"], aliases: ["calpis", "calpico"]}
+  - {key: nescafe, name_cn: 雀巢咖啡, name_en: Nescafe, region: intl, category: coffee, queries: ["Nescafe can", "Nescafe bottle"], aliases: ["nescafe", "nescafé"], reference_hex: "#8B1E1E"}
+  - {key: starbucks, name_cn: 星巴克, name_en: Starbucks, region: intl, category: coffee, queries: ["Starbucks bottled drink", "Starbucks Frappuccino bottle"], aliases: ["starbucks"], reference_hex: "#00704A"}
+  - {key: ramune, name_cn: 波子汽水, name_en: Ramune, region: intl, category: carbonated, queries: ["Ramune bottle", "Ramune soda"], aliases: ["ramune"]}
+
+  - {key: nongfu_spring, name_cn: 农夫山泉, name_en: Nongfu Spring, region: cn, category: water, queries: ["Nongfu Spring bottle", "Nong Fu Spring water"], aliases: ["nongfu", "nong fu spring", "农夫山泉"], reference_hex: "#E60012"}
+  - {key: wahaha, name_cn: 娃哈哈, name_en: Wahaha, region: cn, category: dairy, queries: ["Wahaha bottle", "Wahaha drink"], aliases: ["wahaha", "娃哈哈"]}
+  - {key: kangshifu, name_cn: 康师傅, name_en: Master Kong, region: cn, category: tea, queries: ["Master Kong ice tea bottle", "Kangshifu drink"], aliases: ["kangshifu", "master kong", "康师傅"]}
+  - {key: uni_president, name_cn: 统一, name_en: Uni-President, region: cn, category: tea, queries: ["Uni-President tea bottle", "Tongyi drink"], aliases: ["uni president", "tongyi", "统一"]}
+  - {key: wanglaoji, name_cn: 王老吉, name_en: Wanglaoji, region: cn, category: herbal, queries: ["Wanglaoji can", "Wang Lao Ji herbal tea"], aliases: ["wanglaoji", "wang lao ji", "王老吉"], reference_hex: ["#E60012", "#5FA83C"]}
+  - {key: jiaduobao, name_cn: 加多宝, name_en: JDB Herbal Tea, region: cn, category: herbal, queries: ["Jiaduobao can", "JDB herbal tea"], aliases: ["jiaduobao", "加多宝"], reference_hex: "#E60012"}
+  - {key: genki_forest, name_cn: 元气森林, name_en: Genki Forest, region: cn, category: carbonated, queries: ["Genki Forest bottle", "Yuanqi Senlin drink"], aliases: ["genki forest", "yuanqi senlin", "元气森林"]}
+  - {key: dongpeng, name_cn: 东鹏特饮, name_en: Dongpeng, region: cn, category: energy, queries: ["Dongpeng energy drink", "Eastroc beverage"], aliases: ["dongpeng", "eastroc", "东鹏"], reference_hex: "#FFD100"}
+  - {key: mizone, name_cn: 脉动, name_en: Mizone, region: cn, category: sports, queries: ["Mizone bottle", "Mai Dong drink"], aliases: ["mizone", "mai dong", "脉动"]}
+  - {key: scream, name_cn: 尖叫, name_en: Scream, region: cn, category: sports, queries: ["Scream sport drink bottle", "Jian Jiao drink"], aliases: ["scream drink", "jian jiao", "尖叫"]}
+  - {key: jianlibao, name_cn: 健力宝, name_en: Jianlibao, region: cn, category: sports, queries: ["Jianlibao can", "Jian Li Bao drink"], aliases: ["jianlibao", "jian li bao", "健力宝"]}
+  - {key: vitasoy, name_cn: 维他奶, name_en: Vitasoy, region: cn, category: soy, queries: ["Vitasoy carton", "Vitasoy drink"], aliases: ["vitasoy", "维他奶"]}
+  - {key: vita_lemon_tea, name_cn: 维他柠檬茶, name_en: Vita Lemon Tea, region: cn, category: tea, queries: ["Vita lemon tea carton", "Vita Lemon Tea bottle"], aliases: ["vita lemon tea", "vitasoy lemon tea"]}
+  - {key: oriental_leaves, name_cn: 东方树叶, name_en: Oriental Leaves, region: cn, category: tea, queries: ["Oriental Leaves bottle", "Nongfu Spring tea bottle"], aliases: ["oriental leaves", "东方树叶"]}
+  - {key: tea_pi, name_cn: 茶π, name_en: Tea Pi, region: cn, category: tea, queries: ["Tea Pi bottle", "Nongfu Spring tea pi"], aliases: ["tea pi", "茶π"]}
+  - {key: coconut_palm, name_cn: 椰树牌椰汁, name_en: Coconut Palm, region: cn, category: juice, queries: ["Coconut Palm coconut milk", "Yeshu coconut juice"], aliases: ["coconut palm", "yeshu", "椰树"]}
+  - {key: huiyuan, name_cn: 汇源, name_en: Huiyuan, region: cn, category: juice, queries: ["Huiyuan juice carton", "Hui Yuan juice"], aliases: ["huiyuan", "hui yuan", "汇源"]}
+  - {key: beibingyang, name_cn: 北冰洋, name_en: Beibingyang, region: cn, category: carbonated, queries: ["Beibingyang soda bottle", "Arctic Ocean soda China"], aliases: ["beibingyang", "北冰洋"]}
+  - {key: bingfeng, name_cn: 冰峰, name_en: Bingfeng, region: cn, category: carbonated, queries: ["Bingfeng soda bottle", "Bing Feng drink"], aliases: ["bingfeng", "冰峰"]}
+  - {key: laoshan_cola, name_cn: 崂山可乐, name_en: Laoshan Cola, region: cn, category: carbonated, queries: ["Laoshan Cola bottle", "Lao Shan Cola"], aliases: ["laoshan cola", "崂山可乐"]}
+  - {key: ganten, name_cn: 百岁山, name_en: Ganten, region: cn, category: water, queries: ["Ganten water bottle", "Baisuishan water"], aliases: ["ganten", "baisuishan", "百岁山"]}
+  - {key: cestbon, name_cn: 怡宝, name_en: Cestbon, region: cn, category: water, queries: ["Cestbon water bottle", "Yibao water"], aliases: ["cestbon", "yibao", "怡宝"]}
+  - {key: jingtian, name_cn: 景田, name_en: Jingtian, region: cn, category: water, queries: ["Jingtian water bottle", "Jing Tian water"], aliases: ["jingtian", "景田"]}
+  - {key: luckin_coffee, name_cn: 瑞幸咖啡, name_en: Luckin Coffee, region: cn, category: coffee, queries: ["Luckin Coffee cup", "Luckin bottle"], aliases: ["luckin", "瑞幸"], reference_hex: "#0055A5"}
+  - {key: wangzai_milk, name_cn: 旺仔牛奶, name_en: Wangzai Milk, region: cn, category: dairy, queries: ["Wangzai milk can", "Wang Wang milk drink"], aliases: ["wangzai", "wang wang", "旺仔"], reference_hex: "#E60012"}
+  - {key: six_walnuts, name_cn: 六个核桃, name_en: Six Walnuts, region: cn, category: dairy, queries: ["Six Walnuts drink can", "Yangyuan walnut milk"], aliases: ["six walnuts", "yangyuan", "六个核桃"]}
+  - {key: ad_calcium_milk, name_cn: 娃哈哈AD钙奶, name_en: Wahaha AD Calcium Milk, region: cn, category: dairy, queries: ["AD Calcium Milk bottle", "Wahaha AD milk"], aliases: ["ad calcium", "ad milk", "ad钙奶"]}
+  - {key: mixue, name_cn: 蜜雪冰城, name_en: Mixue, region: cn, category: tea, queries: ["Mixue Ice Cream and Tea cup", "Mixue drink"], aliases: ["mixue", "蜜雪冰城"]}
+  - {key: heytea, name_cn: 喜茶, name_en: HEYTEA, region: cn, category: tea, queries: ["HEYTEA cup", "Heytea bottle"], aliases: ["heytea", "喜茶"]}

@@ -1,0 +1,11 @@
+aiohttp>=3.11.0
+Pillow>=11.0.0
+numpy>=2.1.0
+scikit-learn>=1.5.2
+scipy>=1.11.0
+PyYAML>=6.0.2
+# 人体语义分割（C 档）：模型权重在 models/segformer_clothes.onnx。
+# 缺 onnxruntime 或模型文件时程序会自动降级到旧的色调启发式，不会崩。
+onnxruntime>=1.20.0
+# 仅 scripts/make_phone_qr.py 生成手机访问二维码用；主程序不依赖
+qrcode>=7.4
